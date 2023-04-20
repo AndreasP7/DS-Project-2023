@@ -38,9 +38,8 @@ public class Client extends Thread {
             System.err.println("You are trying to connect to an unknown host!");
         } catch (IOException ioException) {
             ioException.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } finally {
+        } 
+        finally {
             try {
                 in.close(); out.close();
                 requestSocket.close();
