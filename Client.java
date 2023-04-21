@@ -31,7 +31,8 @@ public class Client extends Thread {
             //send GPX file to server
             GPX gpxFile = new GPX(path);
             out.writeObject(gpxFile);
-            
+            System.out.println(path);
+            System.out.println(path);
             
           
         } catch (UnknownHostException unknownHost) {
@@ -50,6 +51,12 @@ public class Client extends Thread {
     }
     
     public static void main(String [] args) {
-        //start Clients
+        new Client("gpxs/route1.gpx", 2040).start();
+        new Client("gpxs/route2.gpx", 2040).start();
+        new Client("gpxs/route3.gpx", 2040).start();
+        new Client("gpxs/route4.gpx", 2040).start();
+        new Client("gpxs/route5.gpx", 2040).start();
+        new Client("gpxs/route6.gpx", 2040).start();
+     
     }
 }

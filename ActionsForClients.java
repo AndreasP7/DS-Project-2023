@@ -17,21 +17,10 @@ ObjectOutputStream out;
  
     public void run() {
         try {
-                Test t = (Test) in.readObject();
-                t.setA(t.getB()+t.getA());
-                t.setflag(true);
-                out.writeObject(t);
-                out.flush();
-                // int a = in.readInt();
-                // int b = in.readInt();
-                // out.writeInt(a + b);
-                // out.flush(); // sends the data
+                System.out.println("1");
     
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);// need it in readObject 
-        } finally {
+        }
+        finally {
             try {
                 in.close();
                 out.close();

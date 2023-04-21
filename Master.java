@@ -19,11 +19,13 @@ public class Master extends Thread{
     }
     //Server 1- users
     //Server 2 - workers
+
+    
     
     //recieve files
     //parse xml
     
-    List<Map<String,String>> parseGPX(GPX gpxFile){
+    private List<Map<String,String>> parseGPX(GPX gpxFile){
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         List<Map<String,String>> waypoints = new ArrayList<Map<String,String>>();
         try {
@@ -70,12 +72,29 @@ public class Master extends Thread{
         return waypoints;
     
     }
-    //Initialize workers
+    //map
 
-    // Send
+    public static Map<String,String> map( List<Map<String,String>> gpx_map, int n){
+        int size = gpx_map.size();
+        int k = 0;
+        while( gpx_map.size() >= n){
+            List<Map<String,String>> chunk = new ArrayList<Map<String,String>>();
+            for (int i =k; i <= k*n ; i++){
+                chunk.add(gpx_map.get(i));
+                size -= 1;
+                k += n; 
+            }
+            //send chunk to worker
+                   
+        }
+            
+        
+
+    }
+
     public static void main(String[] args) {
-        GPX file = new GPX("gpxs/route1.gpx");
-        Master m = new Master(5);
-        System.out.println(m.parseGPX(file));
+        Server s1 = new Server();
+        s1.openServer(2040, 10);
+        s1.openServer(2039, 10);
     }
 }
