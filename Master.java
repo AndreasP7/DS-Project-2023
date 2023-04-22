@@ -26,13 +26,43 @@ public class Master extends Thread{
 
     }
 
-    void openServer(int port, int connections){
+    void openUserServer(int port, int connections){
+        System.out.println("Opened User Server");
         try {
             s = new ServerSocket(port, connections);
             while (true){
                 providerSocket = s.accept();
                 Thread t = new ActionsForUsers(providerSocket);
                 t.start();
+                
+            }
+        }
+        catch (IOException ioException){
+            ioException.printStackTrace();
+        }
+        finally {
+            try {
+                providerSocket.close();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        }
+    }
+
+    void openWorkerServer(int port, int connections){
+        System.out.println("Opened Worker Server");
+        try {
+            s = new ServerSocket(port, connections);
+            while (true){
+                providerSocket = s.accept();
+                List<Map<String,String>> chunk = new ArrayList<Map<String,String>>();
+                Thread t = new ActionsForWorkers(chunk, providerSocket);
+                t.start();
+
+                InputStream input = providerSocket.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                System.out.println(reader.readLine());
+            
             }
         }
         catch (IOException ioException){
@@ -96,7 +126,7 @@ public class Master extends Thread{
     }
     //map
 
-    public static Map<String,Float> map( List<Map<String,String>> gpx_map, int n){
+    public Map<String,Float> Map( List<Map<String,String>> gpx_map, int n){
         
         Map<String,Float> results = new HashMap<String,Float>();
         int size = gpx_map.size();
@@ -116,7 +146,17 @@ public class Master extends Thread{
 
     }
 
+    public Map<String,Float> Reduce(List<Map<String,String>> Iresults){
+        Map<String,Float> results = new HashMap<String,Float>();
+        
+        return results;
+
+    }
+
+
+
     public static void main(String[] args) {
-        new Master().openServer(4020, 1);
+        //new Master().openUserServer(4020, 1);
+        new Master().openWorkerServer(4019, 1);
     }
 }
