@@ -3,9 +3,17 @@ import java.io.*;
 public class GPX implements Serializable {
     String path;
     File file;
+    int results;
+    
     GPX(String path){
         this.path = path;
         this.file = new File(path);
+    }
+    void setResults(int r){
+        this.results = r;
+    }
+    int getResults(){
+        return this.results;
     }
 
     String ReadFile(String path){

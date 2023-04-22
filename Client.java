@@ -32,7 +32,7 @@ public class Client extends Thread {
             GPX gpxFile = new GPX(path);
             out.writeObject(gpxFile);
             System.out.println(path);
-            System.out.println(path);
+            
             
           
         } catch (UnknownHostException unknownHost) {

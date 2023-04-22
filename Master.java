@@ -8,22 +8,44 @@ import org.xml.sax.SAXException;
 import org.w3c.dom.Node;
 import java.io.*;
 import java.util.*;
+import java.net.*;
 
 public class Master extends Thread{
     int workers_n;
+    ServerSocket s;
+    Socket providerSocket;
+
+    Master(){
+
+    }
+
     Master(int workers_n){
 
         this.workers_n = workers_n;
 
 
     }
-    //Server 1- users
-    //Server 2 - workers
 
-    
-    
-    //recieve files
-    //parse xml
+    void openServer(int port, int connections){
+        try {
+            s = new ServerSocket(port, connections);
+            while (true){
+                providerSocket = s.accept();
+                Thread t = new ActionsForUsers(providerSocket);
+                t.start();
+            }
+        }
+        catch (IOException ioException){
+            ioException.printStackTrace();
+        }
+        finally {
+            try {
+                providerSocket.close();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        }
+    }
     
     private List<Map<String,String>> parseGPX(GPX gpxFile){
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -74,10 +96,12 @@ public class Master extends Thread{
     }
     //map
 
-    public static Map<String,String> map( List<Map<String,String>> gpx_map, int n){
+    public static Map<String,Float> map( List<Map<String,String>> gpx_map, int n){
+        
+        Map<String,Float> results = new HashMap<String,Float>();
         int size = gpx_map.size();
         int k = 0;
-        while( gpx_map.size() >= n){
+        while( size >= n){
             List<Map<String,String>> chunk = new ArrayList<Map<String,String>>();
             for (int i =k; i <= k*n ; i++){
                 chunk.add(gpx_map.get(i));
@@ -88,13 +112,11 @@ public class Master extends Thread{
                    
         }
             
-        
+        return results;
 
     }
 
     public static void main(String[] args) {
-        Server s1 = new Server();
-        s1.openServer(2040, 10);
-        s1.openServer(2039, 10);
+        new Master().openServer(4020, 1);
     }
 }
