@@ -12,10 +12,13 @@ import java.net.*;
 
 public class Master extends Thread{
     int workers_n;
-    ServerSocket s;
-    Socket providerSocket;
+    ServerSocket userSocket;
+    ServerSocket workerSocket;
+    Socket workerProvider;
+    Socket userProvider;
 
     Master(){
+        
 
     }
 
@@ -26,14 +29,41 @@ public class Master extends Thread{
 
     }
 
-    void openUserServer(int port, int connections){
+    public class UserHandler extends Thread{
+        Socket userSocket;
+
+        UserHandler(Socket socket){
+            this.userSocket = socket;
+        }
+
+        public void run(){
+            
+        }
+
+    }
+
+    void openServer(){
         System.out.println("Opened User Server");
         try {
-            s = new ServerSocket(port, connections);
+            userSocket = new ServerSocket(4020, 6);
+            workerSocket = new ServerSocket(4019, 10);
             while (true){
-                providerSocket = s.accept();
-                Thread t = new ActionsForUsers(providerSocket);
-                t.start();
+            
+                userProvider = userSocket.accept();
+                System.out.println("Thread");
+                Thread userThread = new ActionsForUsers(userProvider);
+                
+                userThread.start();
+
+                /*workerProvider = workerSocket.accept();
+
+                List<Map<String,String>> chunk = new ArrayList<Map<String,String>>();
+                Thread workerThread = new ActionsForWorkers(chunk, workerProvider);
+                workerThread.start();
+
+                InputStream input = workerProvider.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                System.out.println(reader.readLine());*/
                 
             }
         }
@@ -42,14 +72,15 @@ public class Master extends Thread{
         }
         finally {
             try {
-                providerSocket.close();
+                workerProvider.close();
+                userProvider.close();
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
         }
     }
 
-    void openWorkerServer(int port, int connections){
+    /*void openWorkerServer(int port, int connections){
         System.out.println("Opened Worker Server");
         try {
             s = new ServerSocket(port, connections);
@@ -75,7 +106,7 @@ public class Master extends Thread{
                 ioException.printStackTrace();
             }
         }
-    }
+    }*/
     
     private List<Map<String,String>> parseGPX(GPX gpxFile){
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -156,7 +187,7 @@ public class Master extends Thread{
 
 
     public static void main(String[] args) {
-        //new Master().openUserServer(4020, 1);
-        new Master().openWorkerServer(4019, 1);
+        
+        new Master().openServer();
     }
 }
