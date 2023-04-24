@@ -14,8 +14,8 @@ public class Master extends Thread{
     int workers_n;
     ServerSocket userSocket;
     ServerSocket workerSocket;
-    Socket workerProvider;
     Socket userProvider;
+    Socket workerProvider;
 
     Master(){
         
@@ -29,43 +29,22 @@ public class Master extends Thread{
 
     }
 
-    public class UserHandler extends Thread{
-        Socket userSocket;
-
-        UserHandler(Socket socket){
-            this.userSocket = socket;
-        }
-
-        public void run(){
-            
-        }
-
-    }
-
     void openServer(){
         System.out.println("Opened User Server");
         try {
-            userSocket = new ServerSocket(4020, 6);
-            workerSocket = new ServerSocket(4019, 10);
-            while (true){
+            userSocket = new ServerSocket(4020);
+            workerSocket= new ServerSocket(4019);
+           while (true){
+               userProvider = userSocket.accept();
+               workerProvider = workerSocket.accept();
+               Thread t = new SocketHandler(userProvider, workerProvider);
+
+
+               t.start();
+
+           }
+                
             
-                userProvider = userSocket.accept();
-                System.out.println("Thread");
-                Thread userThread = new ActionsForUsers(userProvider);
-                
-                userThread.start();
-
-                /*workerProvider = workerSocket.accept();
-
-                List<Map<String,String>> chunk = new ArrayList<Map<String,String>>();
-                Thread workerThread = new ActionsForWorkers(chunk, workerProvider);
-                workerThread.start();
-
-                InputStream input = workerProvider.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-                System.out.println(reader.readLine());*/
-                
-            }
         }
         catch (IOException ioException){
             ioException.printStackTrace();
@@ -79,34 +58,6 @@ public class Master extends Thread{
             }
         }
     }
-
-    /*void openWorkerServer(int port, int connections){
-        System.out.println("Opened Worker Server");
-        try {
-            s = new ServerSocket(port, connections);
-            while (true){
-                providerSocket = s.accept();
-                List<Map<String,String>> chunk = new ArrayList<Map<String,String>>();
-                Thread t = new ActionsForWorkers(chunk, providerSocket);
-                t.start();
-
-                InputStream input = providerSocket.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-                System.out.println(reader.readLine());
-            
-            }
-        }
-        catch (IOException ioException){
-            ioException.printStackTrace();
-        }
-        finally {
-            try {
-                providerSocket.close();
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
-        }
-    }*/
     
     private List<Map<String,String>> parseGPX(GPX gpxFile){
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();

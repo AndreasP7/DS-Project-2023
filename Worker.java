@@ -22,7 +22,6 @@ public class Worker extends Thread{
             in = new ObjectInputStream(requestSocket.getInputStream());
             List<Map<String,String>> chunk = (List<Map<String,String>> ) in.readObject();
             
-            chunk = (List<Map<String,String>>) in.readObject();
 
             // proccess chunk
             
@@ -53,5 +52,13 @@ public class Worker extends Thread{
 
     public static void main(String[] args) {
         new Worker(4019);
+        new Worker(4019);
+        new Worker(4019);
+        new Worker(4019);
+        new Worker(4019);
+        new Worker(4019);
+        new Worker(4019);
+        new Worker(4019);
+        
     }
 }
