@@ -36,10 +36,8 @@ public class Master extends Thread{
             workerSocket= new ServerSocket(4019);
            while (true){
                userProvider = userSocket.accept();
-               workerProvider = workerSocket.accept();
-               Thread t = new SocketHandler(userProvider, workerProvider);
-
-
+               System.out.println("Connected User");
+               Thread t = new SocketHandler(userProvider, workerSocket);
                t.start();
 
            }
@@ -59,7 +57,7 @@ public class Master extends Thread{
         }
     }
     
-    private List<Map<String,String>> parseGPX(GPX gpxFile){
+    public static List<Map<String,String>> parseGPX(GPX gpxFile){
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         List<Map<String,String>> waypoints = new ArrayList<Map<String,String>>();
         try {
