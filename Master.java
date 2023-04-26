@@ -11,32 +11,39 @@ import java.util.*;
 import java.net.*;
 
 public class Master extends Thread{
-    int workers_n;
+    
     ServerSocket userSocket;
     ServerSocket workerSocket;
     Socket userProvider;
     Socket workerProvider;
+    ArrayList<Socket> Workers = new ArrayList<Socket>();
+    int numberOfWorkers;
 
-    Master(){
+    Master(int numberOfWorkers){
+        this.numberOfWorkers = numberOfWorkers;
         
 
     }
 
-    Master(int workers_n){
-
-        this.workers_n = workers_n;
-
-
-    }
-
-    void openServer(){
-        System.out.println("Opened User Server");
+     void openServer(){
+        System.out.println("Opened Server");
         try {
             userSocket = new ServerSocket(4020);
-            workerSocket= new ServerSocket(4019);
-           while (true){
+            workerSocket= new ServerSocket(3000);
+
+            
+
+            while(this.numberOfWorkers > Workers.size() ){
+                workerProvider = workerSocket.accept();
+
+                
+                Workers.add(workerProvider);
+                
+                System.out.println("Worker Connected, "+Workers.get(Workers.size()-1).getInetAddress()) ;
+            }
+            while (true){
                userProvider = userSocket.accept();
-               System.out.println("Connected User");
+               
                Thread t = new SocketHandler(userProvider, workerSocket);
                t.start();
 
@@ -137,6 +144,6 @@ public class Master extends Thread{
 
     public static void main(String[] args) {
         
-        new Master().openServer();
+        new Master(2).openServer();
     }
 }

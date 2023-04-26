@@ -1,16 +1,21 @@
 import java.io.*;
 import java.util.*;
+import java.util.stream.*;
 
-public class Test implements Serializable {
+public class Test  {
     public static void main(String[] args) {
         
-        List<Integer> chunk = new ArrayList<Integer>();
-        chunk.add(1);
-        chunk.add(2);
-        chunk.add(3);
-        chunk.remove(0);
-        System.out.println(chunk.get(0));
+        List<Integer> chunk = Arrays.asList(1,2,3,4);
+        
+        int square_sum = chunk.stream().map(x -> x*x).reduce(0 ,(a,b) -> a+b);
+
+        
+
+        System.out.println(square_sum);
+     
 
     }
+
+    
     
 }

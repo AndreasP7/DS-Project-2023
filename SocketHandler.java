@@ -23,17 +23,18 @@ public class SocketHandler extends Thread{
             out1 = new ObjectOutputStream(userProvider.getOutputStream());
             in1 = new ObjectInputStream(userProvider.getInputStream());
             
-            int data = (Integer) in1.readObject();
+            String data = (String) in1.readObject();
+            System.out.println("Connected User "+data);
             
             try{
                 while(true){
                     this.workerProvider = workerSocket.accept();
-                    System.out.println("Worker connected");
+                    System.out.println("Worker connected to "+ data);
 
 
                 }
             }catch(IOException e){
-                
+
 
             }
 

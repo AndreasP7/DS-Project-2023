@@ -4,11 +4,13 @@ import java.text.*;
 import java.util.*;
 
 
-public class Worker extends Thread{
+public class Worker {
     int port;
-    //connect to server on socket
-    Worker(int port){
+    int wid;
+    
+    Worker(int port, int wid){
         this.port = port;
+        this.wid = wid;
     }
 
     public void run(){
@@ -18,30 +20,16 @@ public class Worker extends Thread{
 
         try{
             String host = "localhost";
+            
+            
             requestSocket = new Socket(host, this.port);
 
-            out = new ObjectOutputStream(requestSocket.getOutputStream());
-            in = new ObjectInputStream(requestSocket.getInputStream());
-            List<Map<String,String>> chunk = (List<Map<String,String>> ) in.readObject();
-    
-            Map<String,Integer> results = new HashMap<String, Integer>();
-            results.put("Result 1",1);
-            out.writeObject(results);
-
-            int d = (int) in.readObject();
-            out.writeObject(d+1);
-            out.flush();
             
-
-            //send results
-
-            out.flush();
+            
         }catch (UnknownHostException unknownHost) {
             System.err.println("You are trying to connect to an unknown host!");
         } catch (IOException ioException) {
             ioException.printStackTrace();
-        }catch (ClassNotFoundException e){
-            throw new RuntimeException(e);
         }finally {
             try {
                 in.close();
@@ -123,21 +111,12 @@ public class Worker extends Thread{
         
 
     public static void main(String[] args) {
-        GPX gpx = new GPX("gpxs/route1.gpx");
-        List<Map<String,String>> chunk = Master.parseGPX(gpx);
-        System.out.println(Calculate(chunk));
-    
+            
+        new Worker(3000, 0).run();
+       
 
         
         
-        /*new Worker(4019);
-        new Worker(4019);
-        new Worker(4019);
-        new Worker(4019);
-        new Worker(4019);
-        new Worker(4019);
-        new Worker(4019);
-        new Worker(4019);*/
         
     }
 }

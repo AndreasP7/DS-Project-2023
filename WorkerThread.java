@@ -1,13 +1,14 @@
 import java.io.*;
 import java.net.*;
-public class User extends  Thread {
-    String path;
-    int port;
-    int uid;
-    User(String path, int port, int uid){
-        this.path = path;
-        this.port = port;
+import java.text.*;
+import java.util.*;
 
+public class WorkerThread extends Thread{
+    int wid;
+    int port;
+    WorkerThread(int port, int wid){
+        this.port = port;
+        this.wid = wid;
     }
 
     public void run(){
@@ -21,22 +22,26 @@ public class User extends  Thread {
 
             out = new ObjectOutputStream(requestSocket.getOutputStream());
             in = new ObjectInputStream(requestSocket.getInputStream());
-            /*GPX gpx = new GPX(this.path);
-            out.writeObject(gpx);
-            out.flush();
+            List<Map<String,String>> chunk = (List<Map<String,String>> ) in.readObject();
+    
+            Map<String,Integer> results = new HashMap<String, Integer>();
+            results.put("Result 1",1);
+            out.writeObject(results);
 
-            gpx = (GPX) in.readObject();
-
-            System.out.println("Result " + gpx.getResults());*/
-
-            out.writeObject(this.path);
+            int d = (int) in.readObject();
+            out.writeObject(d+1);
             out.flush();
             
 
+            //send results
+
+            out.flush();
         }catch (UnknownHostException unknownHost) {
             System.err.println("You are trying to connect to an unknown host!");
         } catch (IOException ioException) {
             ioException.printStackTrace();
+        }catch (ClassNotFoundException e){
+            throw new RuntimeException(e);
         }finally {
             try {
                 in.close();
@@ -45,10 +50,7 @@ public class User extends  Thread {
                 ioException.printStackTrace();
             }
         }
-    }
-
-    public static void main(String[] args) {
-        
 
     }
+    
 }
