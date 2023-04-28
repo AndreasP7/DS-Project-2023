@@ -5,23 +5,29 @@ import java.util.*;
 
 public class WorkerThread extends Thread{
     int wid;
-    Socket socket;
+
+
+    ObjectOutputStream out = null;
+    ObjectInputStream in = null;
     WorkerThread( int wid, Socket socket){
-        this.socket = socket;
+
         this.wid = wid;
+
+        try {
+            out = new ObjectOutputStream(socket.getOutputStream());
+            in = new ObjectInputStream(socket.getInputStream());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void run(){
-        ObjectOutputStream out = null;
-        ObjectInputStream in = null;
+
 
 
         try{
             String host = "localhost";
-
-            out = new ObjectOutputStream(this.socket.getOutputStream());
-
-
             int results = 2;
 
             out.writeObject(results);

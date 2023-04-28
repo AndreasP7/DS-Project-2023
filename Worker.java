@@ -12,6 +12,7 @@ public class Worker {
     Worker(int port, int wid){
         this.port = port;
         this.wid = wid;
+
     }
 
     public synchronized void  run() {
@@ -21,8 +22,9 @@ public class Worker {
         int Request = 0;
         String host = "localhost";
 
-        while(true) {
-            try {
+
+        try {
+            while(true) {
                 requestSocket = new Socket(host, this.port);
                 Sockets.add(requestSocket);
                 out = new ObjectOutputStream(requestSocket.getOutputStream());
@@ -31,26 +33,26 @@ public class Worker {
                 Request = (int) in.readObject();
                 System.out.println("Request received");
 
-                //Thread t = new WorkerThread(wid, Sockets.get(Sockets.size() - 1));
-                //t.start();
+                Thread t = new WorkerThread(wid, Sockets.get(Sockets.size() - 1));
+                t.start();
+            }
 
-
-            } catch (UnknownHostException unknownHost) {
-                System.err.println("You are trying to connect to an unknown host!");
+        } catch (UnknownHostException unknownHost) {
+            System.err.println("You are trying to connect to an unknown host!");
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                in.close();
+                out.close();
             } catch (IOException ioException) {
                 ioException.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            } finally {
-                try {
-                    in.close();
-                    out.close();
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                }
-
             }
+
         }
+
     }
 
 
