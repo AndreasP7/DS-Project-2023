@@ -25,39 +25,49 @@ public class Master extends Thread{
 
     }
 
-     void openServer(){
+     void openServer() {
         System.out.println("Opened Server");
         try {
             userSocket = new ServerSocket(4020);
             workerSocket= new ServerSocket(3000);
 
-            
+            workerProvider = workerSocket.accept();
+            System.out.println("Worker connected");
 
-            while(this.numberOfWorkers > Workers.size() ){
-                workerProvider = workerSocket.accept();
+            ObjectOutputStream out = new ObjectOutputStream(workerProvider.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(workerProvider.getInputStream());
+            out.writeObject(1);
+            out.flush();
 
-                
-                Workers.add(workerProvider);
-                
-                System.out.println("Worker Connected, "+Workers.get(Workers.size()-1).getInetAddress()) ;
-            }
-            while (true){
+
+            //int results = (int) in.readObject();
+            //System.out.println(results);
+
+
+
+
+            /*while (true){
                userProvider = userSocket.accept();
+               System.out.println("User Accepted");
+
+
                
                Thread t = new SocketHandler(userProvider, workerSocket);
                t.start();
 
-           }
+           }*/
                 
             
         }
         catch (IOException ioException){
             ioException.printStackTrace();
-        }
+        }/*catch(ClassNotFoundException e){
+            throw new RuntimeException(e);
+        }*/
         finally {
             try {
                 workerProvider.close();
-                userProvider.close();
+                //userProvider.close();
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }

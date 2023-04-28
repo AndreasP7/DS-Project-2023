@@ -7,39 +7,54 @@ import java.util.*;
 public class Worker {
     int port;
     int wid;
-    
+
+    ArrayList<Socket> Sockets = new ArrayList<Socket>();
     Worker(int port, int wid){
         this.port = port;
         this.wid = wid;
     }
 
-    public void run(){
+    public synchronized void  run() {
         ObjectOutputStream out = null;
         ObjectInputStream in = null;
         Socket requestSocket = null;
+        int Request = 0;
+        String host = "localhost";
 
-        try{
-            String host = "localhost";
-            
-            
-            requestSocket = new Socket(host, this.port);
-
-            
-            
-        }catch (UnknownHostException unknownHost) {
-            System.err.println("You are trying to connect to an unknown host!");
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-        }finally {
+        while(true) {
             try {
-                in.close();
-                out.close();
+                requestSocket = new Socket(host, this.port);
+                Sockets.add(requestSocket);
+                out = new ObjectOutputStream(requestSocket.getOutputStream());
+                in = new ObjectInputStream(requestSocket.getInputStream());
+                System.out.println("Waiting for Request");
+                Request = (int) in.readObject();
+                System.out.println("Request received");
+
+                //Thread t = new WorkerThread(wid, Sockets.get(Sockets.size() - 1));
+                //t.start();
+
+
+            } catch (UnknownHostException unknownHost) {
+                System.err.println("You are trying to connect to an unknown host!");
             } catch (IOException ioException) {
                 ioException.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            } finally {
+                try {
+                    in.close();
+                    out.close();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+
             }
         }
-
     }
+
+
+
 
    
 
@@ -111,7 +126,12 @@ public class Worker {
         
 
     public static void main(String[] args) {
-            
+        Scanner keyboard = new Scanner(System.in);
+
+
+        //System.out.println("Enter ID");
+        //int wid = keyboard.nextInt();
+
         new Worker(3000, 0).run();
        
 
