@@ -15,27 +15,32 @@ public class Worker {
 
     }
 
-    public synchronized void  run() {
+    public void  run() {
+
         ObjectOutputStream out = null;
         ObjectInputStream in = null;
         Socket requestSocket = null;
-        int Request = 0;
-        String host = "localhost";
-
 
         try {
-            while(true) {
+
+            int Request = 0;
+            String host = "localhost";
+
+            while (true) {
                 requestSocket = new Socket(host, this.port);
-                Sockets.add(requestSocket);
                 out = new ObjectOutputStream(requestSocket.getOutputStream());
                 in = new ObjectInputStream(requestSocket.getInputStream());
                 System.out.println("Waiting for Request");
                 Request = (int) in.readObject();
                 System.out.println("Request received");
 
-                Thread t = new WorkerThread(wid, Sockets.get(Sockets.size() - 1));
+                Thread t = new WorkerThread(wid, requestSocket, out);
                 t.start();
             }
+
+
+
+
 
         } catch (UnknownHostException unknownHost) {
             System.err.println("You are trying to connect to an unknown host!");

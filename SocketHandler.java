@@ -11,32 +11,23 @@ public class SocketHandler extends Thread{
     Socket userProvider;
     Socket workerProvider;
     ServerSocket workerSocket;
-    public SocketHandler(Socket s1, ServerSocket s2){
-        this.userProvider = s1;
-        this.workerSocket = s2;
+    public SocketHandler(Socket s1){
+        this.workerProvider = s1;
+
 
 
     }
 
     public void run(){
         try{
-            out1 = new ObjectOutputStream(userProvider.getOutputStream());
-            in1 = new ObjectInputStream(userProvider.getInputStream());
-            
-            String data = (String) in1.readObject();
-            System.out.println("Connected User "+data);
-            
-            try{
-                while(true){
-                    this.workerProvider = workerSocket.accept();
-                    System.out.println("Worker connected to "+ data);
+            ObjectOutputStream out = new ObjectOutputStream(workerProvider.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(workerProvider.getInputStream());
+            out.writeObject(1);
+            out.flush();
 
 
-                }
-            }catch(IOException e){
-
-
-            }
+            int results = in.readInt();
+            System.out.println(results);
 
 
 
@@ -44,8 +35,6 @@ public class SocketHandler extends Thread{
         catch(IOException e){
             e.printStackTrace();
 
-        }catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
         }
 
 

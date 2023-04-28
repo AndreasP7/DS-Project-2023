@@ -9,30 +9,27 @@ public class WorkerThread extends Thread{
 
     ObjectOutputStream out = null;
     ObjectInputStream in = null;
-    WorkerThread( int wid, Socket socket){
+    WorkerThread( int wid, Socket socket, ObjectOutputStream out){
 
         this.wid = wid;
+        this.out = out;
 
-        try {
-            out = new ObjectOutputStream(socket.getOutputStream());
-            in = new ObjectInputStream(socket.getInputStream());
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+
+    }
+    public WorkerThread() {
+        super();
     }
 
     public void run(){
 
-
-
         try{
             String host = "localhost";
-            int results = 2;
 
-            out.writeObject(results);
-            out.flush();
 
+            this.out.writeInt(2);
+            this.out.flush();
 
 
         }catch (UnknownHostException unknownHost) {
@@ -42,7 +39,7 @@ public class WorkerThread extends Thread{
         }
         finally {
             try {
-
+                in.close();
                 out.close();
             } catch (IOException ioException) {
                 ioException.printStackTrace();

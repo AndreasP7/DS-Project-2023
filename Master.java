@@ -31,17 +31,15 @@ public class Master extends Thread{
             userSocket = new ServerSocket(4020);
             workerSocket= new ServerSocket(3000);
 
-            workerProvider = workerSocket.accept();
-            System.out.println("Worker connected");
+            while (true){
+                workerProvider = workerSocket.accept();
+                System.out.println("Worker connected");
 
-            ObjectOutputStream out = new ObjectOutputStream(workerProvider.getOutputStream());
-            ObjectInputStream in = new ObjectInputStream(workerProvider.getInputStream());
-            out.writeObject(1);
-            out.flush();
+                Thread t = new SocketHandler(workerProvider);
+                t.start();
+            }
 
 
-            //int results = (int) in.readObject();
-            //System.out.println(results);
 
 
 
@@ -61,9 +59,7 @@ public class Master extends Thread{
         }
         catch (IOException ioException){
             ioException.printStackTrace();
-        }/*catch(ClassNotFoundException e){
-            throw new RuntimeException(e);
-        }*/
+        }
         finally {
             try {
                 workerProvider.close();
