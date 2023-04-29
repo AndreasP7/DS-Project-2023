@@ -31,30 +31,14 @@ public class Master extends Thread{
             userSocket = new ServerSocket(4020);
             workerSocket= new ServerSocket(3000);
 
-            while (true){
-                workerProvider = workerSocket.accept();
-                System.out.println("Worker connected");
+            while(true){
+                userProvider = userSocket.accept();
+                System.out.println("User Accepted");
 
-                Thread t = new SocketHandler(workerProvider);
+                Thread t = new SocketHandler(workerSocket, userProvider, 20);
                 t.start();
+
             }
-
-
-
-
-
-
-            /*while (true){
-               userProvider = userSocket.accept();
-               System.out.println("User Accepted");
-
-
-               
-               Thread t = new SocketHandler(userProvider, workerSocket);
-               t.start();
-
-           }*/
-                
             
         }
         catch (IOException ioException){
@@ -70,53 +54,7 @@ public class Master extends Thread{
         }
     }
     
-    public static List<Map<String,String>> parseGPX(GPX gpxFile){
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        List<Map<String,String>> waypoints = new ArrayList<Map<String,String>>();
-        try {
-            File inputFile = gpxFile.file;
-            
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(inputFile);
-            doc.getDocumentElement().normalize();
-            NodeList list = doc.getElementsByTagName("wpt");
-            
-            for (int temp = 0; temp < list.getLength(); temp++) {
-                Map<String, String> hm = new HashMap<String, String>();
-                Node node = list.item(temp);
-  
-                if (node.getNodeType() == Node.ELEMENT_NODE) {
-  
-                    Element element = (Element) node;
-  
-                    
-                    String lat = element.getAttribute("lat");
-                    String lon = element.getAttribute("lon");
-  
-                    
-                    String ele = element.getElementsByTagName("ele").item(0).getTextContent();
-                    String time = element.getElementsByTagName("time").item(0).getTextContent();
-                    hm.put("ele", ele);
-                    hm.put("lat", lat);
-                    hm.put("lon", lon);
-                    hm.put("time", time);
-                }
-                waypoints.add(hm);
-            }      
-        }
-        catch (ParserConfigurationException  e) {
-            e.printStackTrace();
-        }
-        catch (SAXException e) {
-            e.printStackTrace();
-        }
-        catch (IOException e){
-            e.printStackTrace();
-        }
 
-        return waypoints;
-    
-    }
     //map
 
     public Map<String,Float> Map( List<Map<String,String>> gpx_map, int n){

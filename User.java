@@ -1,6 +1,6 @@
 import java.io.*;
 import java.net.*;
-public class User extends  Thread {
+public class User extends Thread {
     String path;
     int port;
     int uid;
@@ -21,13 +21,13 @@ public class User extends  Thread {
 
             out = new ObjectOutputStream(requestSocket.getOutputStream());
             in = new ObjectInputStream(requestSocket.getInputStream());
-            /*GPX gpx = new GPX(this.path);
+            GPX gpx = new GPX(this.path, this.uid);
             out.writeObject(gpx);
             out.flush();
 
-            gpx = (GPX) in.readObject();
+            //gpx = (GPX) in.readObject();
 
-            System.out.println("Result " + gpx.getResults());*/
+            System.out.println("Result " + gpx.getResults());
 
             out.writeObject(this.path);
             out.flush();
@@ -48,7 +48,7 @@ public class User extends  Thread {
     }
 
     public static void main(String[] args) {
-        
+        new User("gpxs/route1.gpx", 4020, 0);
 
     }
 }

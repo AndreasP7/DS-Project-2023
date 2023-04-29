@@ -4,16 +4,23 @@ public class GPX implements Serializable {
     String path;
     File file;
     int results;
+
+    int uid;
     
-    GPX(String path){
+    GPX(String path, int uid){
         this.path = path;
         this.file = new File(path);
+        this.uid = uid;
     }
     void setResults(int r){
         this.results = r;
     }
     int getResults(){
         return this.results;
+    }
+
+    int getUid(){
+        return this.uid;
     }
 
     String ReadFile(String path){
