@@ -77,12 +77,7 @@ public class Master extends Thread{
 
     }
 
-    public Map<String,Float> Reduce(List<Map<String,String>> Iresults){
-        Map<String,Float> results = new HashMap<String,Float>();
-        
-        return results;
 
-    }
 
 
 

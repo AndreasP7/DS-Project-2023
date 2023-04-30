@@ -1,11 +1,11 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Chunk {
 
     List<Map<String,String>> waypoints = new ArrayList<Map<String, String>>();
     int userId;
+
+    Map<String, Double> iResults = new HashMap<String,Double>();
 
     Chunk(List<Map<String,String>> waypoints, int userId){
         this.userId = userId;
@@ -23,6 +23,10 @@ public class Chunk {
     public void addWp(Map<String,String> waypoint){
         waypoints.add(waypoint);
 
+    }
+
+    public int getSize(){
+        return this.waypoints.size();
     }
 
 }

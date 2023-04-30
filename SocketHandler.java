@@ -12,10 +12,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+
 
 public class SocketHandler extends Thread{
     ObjectInputStream in1;
@@ -47,30 +46,8 @@ public class SocketHandler extends Thread{
             GPX userGPX = (GPX) inUser.readObject();
             List<Map<String,String>> waypoints = parseGPX(userGPX);
             Map<String,Float> results = new HashMap<String,Float>();
-            Chunk chunk;
-            int size = waypoints.size();
-            int k = 0;
-            int n = size / nChunks;
-            int mod = size % nChunks;
 
-            boolean f = (mod ==0);
-
-            while( size >= n){
-                chunk = new Chunk(userGPX.getUid());
-                for (int i =k; i <= k*n ; i++){
-                    chunk.addWp(waypoints.get(i));
-                    size -= 1;
-                    k += n;
-                }
-                Chunks.add(chunk);
-            }
-
-            if (!f){
-                chunk = new Chunk(userGPX.getUid());
-                for (Map <String, String> waypoint : waypoints){
-                    chunk.addWp(waypoint);
-                }
-            }
+            List<Map<Integer, Chunk>> mapped = this.map(waypoints, userGPX.getUid());
 
             while(true){
                 workerProvider = workerSocket.accept();
@@ -146,18 +123,71 @@ public class SocketHandler extends Thread{
 
     }
 
-    public static List<Map<Integer, Chunk>> map( List<Chunk> Chunks){
+    public List<Map<Integer, Chunk>> map( List<Map<String,String>> waypoints, int id){
+
+        Chunk chunk;
+        int size = waypoints.size();
+        int k = 0;
+        int n = size / nChunks + 1;
+        int mod = size % nChunks;
+
+        boolean f = (mod ==0);
+
+        chunk = new Chunk(id);
+        for( Map<String,String> w : waypoints){
+            chunk.addWp(w);
+            if(chunk.getSize() == n-1 ){
+                Chunks.add(chunk);
+                chunk = new Chunk(id);
+                chunk.addWp(w);
+
+            }
+
+        }
+
+
+
         List<Map<Integer, Chunk>> mapped = new ArrayList<Map<Integer, Chunk>>();
 
-        for(Chunk chunk : Chunks){
+        for(Chunk c : Chunks){
             Map<Integer, Chunk> pair = new HashMap<Integer, Chunk>();
-            pair.put(chunk.getID(), chunk);
+            pair.put(c.getID(), c);
             mapped.add(pair);
 
         }
 
         return mapped;
     }
+
+    public Map<String,Double> Reduce(List<Map<String,Double>> Iresults){
+        Map<String,Double> results = new HashMap<String,Double>();
+
+        Double time[] = new Double[Iresults.size()];
+        Double speed[] =new Double[Iresults.size()];
+        Double distance[] = new Double[Iresults.size()];
+        Double elevation[] = new Double[Iresults.size()];
+
+        Double totalTime = 0.0;
+        Double totalDistance = 0.0;
+        Double totalElevation = 0.0;
+        Double averageSpeed = 0.0;
+
+        for (int i =0; i<= Iresults.size();i++){
+            totalTime += time[i];
+            totalDistance += distance[i];
+            totalElevation += elevation[i];
+            averageSpeed += speed[i]/Iresults.size();
+        }
+
+        results.put("Total Time",totalTime);
+        results.put("Total Distance",totalDistance);
+        results.put("Total Elevation",totalElevation);
+        results.put("Average Speed",averageSpeed);
+
+        return results;
+
+    }
+
 
 
 
