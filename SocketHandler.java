@@ -2,15 +2,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.*;
 import java.util.*;
 
@@ -28,6 +26,8 @@ public class SocketHandler extends Thread{
 
     int nChunks;
 
+    List<Map<String,Double>> Iresults = new ArrayList<Map<String,Double>>();
+
     List<Chunk> Chunks = new ArrayList<Chunk>();
 
     public SocketHandler(ServerSocket workerSocket, Socket userProvider, int nChunks){
@@ -37,7 +37,7 @@ public class SocketHandler extends Thread{
 
     }
 
-    public void run(){
+    synchronized public void run(){
         try{
             ObjectOutputStream outUser = new ObjectOutputStream(userProvider.getOutputStream());
             ObjectInputStream inUser = new ObjectInputStream(userProvider.getInputStream());
@@ -45,24 +45,32 @@ public class SocketHandler extends Thread{
 
             GPX userGPX = (GPX) inUser.readObject();
             List<Map<String,String>> waypoints = parseGPX(userGPX);
-            Map<String,Float> results = new HashMap<String,Float>();
+
+            Map<String,Double> results = new HashMap<String,Double>();
 
             List<Map<Integer, Chunk>> mapped = this.map(waypoints, userGPX.getUid());
 
-            while(true){
+            int counter = 0;
+            //new thread Round Robin
+            while(mapped.size() > 0){
                 workerProvider = workerSocket.accept();
                 ObjectOutputStream outWorker = new ObjectOutputStream(workerProvider.getOutputStream());
                 ObjectInputStream inWorker = new ObjectInputStream(workerProvider.getInputStream());
 
-                //map Chunks
-                outWorker.writeObject(Chunks.get(0));
+                outWorker.writeObject(mapped.get(counter));
                 outWorker.flush();
 
                 //get results
 
+                Thread t = new WorkerHandler(inWorker, Iresults);
+                t.start();
 
 
             }
+
+            userGPX.setResults(Reduce(Iresults));
+            outUser.writeObject(userGPX);
+            outUser.flush();
 
         }
         catch(IOException e){
@@ -79,10 +87,12 @@ public class SocketHandler extends Thread{
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         List<Map<String,String>> waypoints = new ArrayList<Map<String,String>>();
         try {
-            File inputFile = gpxFile.file;
+
+
 
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(inputFile);
+            InputSource is = new InputSource(new StringReader(gpxFile.getText()));
+            Document doc = dBuilder.parse(is);
             doc.getDocumentElement().normalize();
             NodeList list = doc.getElementsByTagName("wpt");
 
@@ -127,25 +137,31 @@ public class SocketHandler extends Thread{
 
         Chunk chunk;
         int size = waypoints.size();
-        int k = 0;
-        int n = size / nChunks + 1;
-        int mod = size % nChunks;
+        int n = 5;
 
-        boolean f = (mod ==0);
 
         chunk = new Chunk(id);
+        int k =0;
         for( Map<String,String> w : waypoints){
             chunk.addWp(w);
             if(chunk.getSize() == n-1 ){
                 Chunks.add(chunk);
+
                 chunk = new Chunk(id);
                 chunk.addWp(w);
 
             }
 
+
+
+            if(waypoints.size()-1 ==k && chunk.getSize() <= n-1){
+                Chunks.add(chunk);
+            }
+            k+=1;
         }
 
 
+        System.out.println(Chunks.size());
 
         List<Map<Integer, Chunk>> mapped = new ArrayList<Map<Integer, Chunk>>();
 

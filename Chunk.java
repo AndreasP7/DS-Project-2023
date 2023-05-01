@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.*;
 
-public class Chunk {
+public class Chunk implements Serializable {
 
     List<Map<String,String>> waypoints = new ArrayList<Map<String, String>>();
     int userId;
@@ -20,6 +21,8 @@ public class Chunk {
         return this.userId;
     }
 
+
+
     public void addWp(Map<String,String> waypoint){
         waypoints.add(waypoint);
 
@@ -27,6 +30,10 @@ public class Chunk {
 
     public int getSize(){
         return this.waypoints.size();
+    }
+
+    public List<Map<String,String>> getWaypoints(){
+        return this.waypoints;
     }
 
 }

@@ -1,29 +1,37 @@
 
 import java.io.*;
+import java.util.Map;
+
 public class GPX implements Serializable {
     String path;
     File file;
-    int results;
+    Map<String, Double> results;
 
     int uid;
+
+    String text;
     
     GPX(String path, int uid){
         this.path = path;
         this.file = new File(path);
         this.uid = uid;
+        this.text = this.ReadFile();
+
+
     }
-    void setResults(int r){
+    void setResults(Map<String, Double> r){
         this.results = r;
     }
-    int getResults(){
+    Map<String, Double> getResults(){
         return this.results;
     }
+    public String getText(){return this.text;}
 
     int getUid(){
         return this.uid;
     }
 
-    String ReadFile(String path){
+    String ReadFile(){
         String text = "";
         try{
             

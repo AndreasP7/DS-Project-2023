@@ -47,37 +47,12 @@ public class Master extends Thread{
         finally {
             try {
                 workerProvider.close();
-                //userProvider.close();
+                userProvider.close();
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
         }
     }
-    
-
-    //map
-
-    public Map<String,Float> Map( List<Map<String,String>> gpx_map, int n){
-        
-        Map<String,Float> results = new HashMap<String,Float>();
-        int size = gpx_map.size();
-        int k = 0;
-        while( size >= n){
-            List<Map<String,String>> chunk = new ArrayList<Map<String,String>>();
-            for (int i =k; i <= k*n ; i++){
-                chunk.add(gpx_map.get(i));
-                size -= 1;
-                k += n; 
-            }
-            //send chunk to worker
-                   
-        }
-            
-        return results;
-
-    }
-
-
 
 
 
