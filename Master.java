@@ -17,11 +17,11 @@ public class Master extends Thread{
     Socket userProvider;
     Socket workerProvider;
     HashMap<InetAddress, Socket> Workers = new HashMap<InetAddress, Socket>();
-    Set<InetAddress> workerAddr = new HashSet<>();
-    int numberOfWorkers;
+    List<InetAddress> workerAddr = new ArrayList<>();
+    int minWorkers;
 
     Master(int numberOfWorkers){
-        this.numberOfWorkers = numberOfWorkers;
+        this.minWorkers = numberOfWorkers;
         
 
     }
@@ -36,7 +36,7 @@ public class Master extends Thread{
                 userProvider = userSocket.accept();
                 System.out.println("User Accepted");
 
-                Thread t = new SocketHandler(workerSocket, userProvider, 20, Workers, workerAddr);
+                Thread t = new SocketHandler(workerSocket, userProvider, 20, Workers, workerAddr, minWorkers = 2);
                 t.start();
 
             }

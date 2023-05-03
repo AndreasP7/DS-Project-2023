@@ -21,9 +21,10 @@ public class SocketHandler extends Thread{
     ObjectOutputStream out2;
 
 
-    Set<InetAddress> workerAddr;
+    List<InetAddress> workerAddr;
     HashMap<InetAddress, Socket> Workers;
 
+    int minWorkers;
     Socket userProvider;
     ServerSocket workerSocket;
 
@@ -35,12 +36,13 @@ public class SocketHandler extends Thread{
 
     List<Chunk> Chunks = new ArrayList<Chunk>();
 
-    public SocketHandler(ServerSocket workerSocket, Socket userProvider, int nChunks, HashMap<InetAddress, Socket> Workers , Set<InetAddress> workerAddr){
+    public SocketHandler(ServerSocket workerSocket, Socket userProvider, int nChunks, HashMap<InetAddress, Socket> Workers , List<InetAddress> workerAddr, int minWorkers){
         this.workerSocket = workerSocket;
         this.userProvider = userProvider;
         this.nChunks = nChunks;
         this.Workers = Workers;
         this.workerAddr = workerAddr;
+        this.minWorkers = minWorkers;
 
     }
 
@@ -57,27 +59,60 @@ public class SocketHandler extends Thread{
 
             List<Map<Integer, Chunk>> mapped = this.map(waypoints, userGPX.getUid());
 
+            int chunk = 0;
             int counter = 0;
             //new thread Round Robin
+
+            Socket current;
             while(mapped.size() > Iresults.size()){
-                for (InetAddress a : workerAddr){
+
+                while(workerAddr.size()<minWorkers){
+                    System.out.println("Waiting for "+(minWorkers - workerAddr.size())+" workers...");
                     workerProvider = workerSocket.accept();
-                    workerProvider.getInetAddress();
-                    ObjectOutputStream outWorker = new ObjectOutputStream(workerProvider.getOutputStream());
-                    ObjectInputStream inWorker = new ObjectInputStream(workerProvider.getInputStream());
+                    if (!workerAddr.contains(workerProvider.getInetAddress())){
+                        workerAddr.add(workerProvider.getInetAddress());
+                        Workers.put(workerProvider.getInetAddress(),workerProvider);
 
-                    outWorker.writeObject(mapped.get(counter));
-                    outWorker.flush();
+                    }
 
-                    //get results
 
-                    //Thread t = new WorkerHandler(inWorker, Iresults, chunk);
-                    //t.start();
+
+                }
+                current = Workers.get(workerAddr.get(counter));
+                ObjectOutputStream outWorker = new ObjectOutputStream(current.getOutputStream());
+                ObjectInputStream inWorker = new ObjectInputStream(current.getInputStream());
+
+                outWorker.writeObject(mapped.get(counter).get(userGPX.getUid()));
+                outWorker.flush();
+
+                Thread t = new WorkerHandler(inWorker, Iresults);
+                t.start();
+
+
+
+                workerProvider = workerSocket.accept();
+                while(workerProvider.getInetAddress() != current.getInetAddress()){
+                    workerProvider = workerSocket.accept();
+                    workerAddr.add(workerProvider.getInetAddress());
+                    Workers.put(workerProvider.getInetAddress(),workerProvider);
+
+
 
                 }
 
 
 
+
+
+
+
+                if (counter == workerAddr.size()){
+                    counter = 0;
+
+                }
+                else{
+                    counter++;
+                }
             }
 
             userGPX.setResults(Reduce(Iresults));

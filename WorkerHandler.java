@@ -9,7 +9,7 @@ public class WorkerHandler extends Thread{
     ObjectInputStream inWorker;
     List<Map<String,Double>> Iresults;
 
-    public WorkerHandler( ObjectInputStream inWorker, List<Map<String,Double>> Iresults ){
+    public WorkerHandler( ObjectInputStream inWorker, List<Map<String,Double>> Iresults){
         this.inWorker = inWorker;
         this.Iresults = Iresults;
 

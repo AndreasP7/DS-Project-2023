@@ -32,7 +32,7 @@ public class Worker {
                 in = new ObjectInputStream(requestSocket.getInputStream());
 
                 System.out.println("Waiting for Request");
-                Map<Integer, Chunk> Request = (Map<Integer, Chunk>) in.readObject();
+                Chunk Request = ( Chunk) in.readObject();
                 System.out.println("Request received");
 
                 Thread t = new WorkerThread(wid, Request, out);

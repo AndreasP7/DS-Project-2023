@@ -6,11 +6,11 @@ import java.util.*;
 public class WorkerThread extends Thread{
     int wid;
 
-    Map<Integer, Chunk> Request;
+    Chunk Request;
 
     ObjectOutputStream out = null;
     ObjectInputStream in = null;
-    WorkerThread( int wid, Map<Integer, Chunk> Request, ObjectOutputStream out){
+    WorkerThread( int wid, Chunk Request, ObjectOutputStream out){
         this.Request = Request;
         this.wid = wid;
         this.out = out;
@@ -26,7 +26,7 @@ public class WorkerThread extends Thread{
     public void run(){
 
         try{
-            Map<String, Double> results = Calculate(Request.get(0));
+            Map<String, Double> results = Calculate(Request);
             out.writeObject(results);
             out.flush();
 
