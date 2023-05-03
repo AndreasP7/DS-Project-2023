@@ -58,7 +58,21 @@ public class Master extends Thread{
 
 
     public static void main(String[] args) {
-        
+
+        int n = 0;
+
+        File file = new File("config/config_master.txt");
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+
+            n =  Integer.parseInt(br.readLine().split("=")[1]);
+            br.close();
+        }catch(FileNotFoundException e){
+            e.printStackTrace();
+        }catch(IOException e){
+            throw new RuntimeException(e);
+        }
+        System.out.printf(String.format("Started Master. Minimum number of Workers needed: %d \n",n));
         new Master(2).openServer();
     }
 }

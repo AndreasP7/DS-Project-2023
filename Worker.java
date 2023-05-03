@@ -7,11 +7,13 @@ import java.util.*;
 public class Worker {
     int port;
     int wid;
+    String host;
 
     ArrayList<Socket> Sockets = new ArrayList<Socket>();
-    Worker(int port, int wid){
+    Worker(int port, int wid, String host){
         this.port = port;
         this.wid = wid;
+        this.host = host;
 
     }
 
@@ -24,10 +26,10 @@ public class Worker {
         try {
 
 
-            String host = "localhost";
+
 
             while (true) {
-                requestSocket = new Socket(host, this.port);
+                requestSocket = new Socket(this.host, this.port);
                 out = new ObjectOutputStream(requestSocket.getOutputStream());
                 in = new ObjectInputStream(requestSocket.getInputStream());
 
@@ -63,13 +65,24 @@ public class Worker {
 
 
     public static void main(String[] args) {
-        Scanner keyboard = new Scanner(System.in);
+
+        String host = "";
+        int id=0;
+        File file = new File("config/config_worker.txt");
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+                host = br.readLine().split("=")[1];
+                id =  Integer.parseInt(br.readLine().split("=")[1]);
+                br.close();
+            }catch(FileNotFoundException e){
+                e.printStackTrace();
+            }catch(IOException e){
+                throw new RuntimeException(e);
+            }
+        System.out.printf(String.format("Started Worker %d. Connected to Master-Server %s \n",id, host));
 
 
-        //System.out.println("Enter ID");
-        //int wid = keyboard.nextInt();
-
-        new Worker(3000, 0).run();
+        new Worker(3000, id,host).run();
        
 
         
