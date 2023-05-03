@@ -19,6 +19,11 @@ public class SocketHandler extends Thread{
     ObjectOutputStream out1;
     ObjectInputStream in2;
     ObjectOutputStream out2;
+
+
+    Set<InetAddress> workerAddr;
+    HashMap<InetAddress, Socket> Workers;
+
     Socket userProvider;
     ServerSocket workerSocket;
 
@@ -30,10 +35,12 @@ public class SocketHandler extends Thread{
 
     List<Chunk> Chunks = new ArrayList<Chunk>();
 
-    public SocketHandler(ServerSocket workerSocket, Socket userProvider, int nChunks){
+    public SocketHandler(ServerSocket workerSocket, Socket userProvider, int nChunks, HashMap<InetAddress, Socket> Workers , Set<InetAddress> workerAddr){
         this.workerSocket = workerSocket;
         this.userProvider = userProvider;
         this.nChunks = nChunks;
+        this.Workers = Workers;
+        this.workerAddr = workerAddr;
 
     }
 
@@ -52,18 +59,23 @@ public class SocketHandler extends Thread{
 
             int counter = 0;
             //new thread Round Robin
-            while(mapped.size() > 0){
-                workerProvider = workerSocket.accept();
-                ObjectOutputStream outWorker = new ObjectOutputStream(workerProvider.getOutputStream());
-                ObjectInputStream inWorker = new ObjectInputStream(workerProvider.getInputStream());
+            while(mapped.size() > Iresults.size()){
+                for (InetAddress a : workerAddr){
+                    workerProvider = workerSocket.accept();
+                    workerProvider.getInetAddress();
+                    ObjectOutputStream outWorker = new ObjectOutputStream(workerProvider.getOutputStream());
+                    ObjectInputStream inWorker = new ObjectInputStream(workerProvider.getInputStream());
 
-                outWorker.writeObject(mapped.get(counter));
-                outWorker.flush();
+                    outWorker.writeObject(mapped.get(counter));
+                    outWorker.flush();
 
-                //get results
+                    //get results
 
-                Thread t = new WorkerHandler(inWorker, Iresults);
-                t.start();
+                    //Thread t = new WorkerHandler(inWorker, Iresults, chunk);
+                    //t.start();
+
+                }
+
 
 
             }

@@ -16,7 +16,8 @@ public class Master extends Thread{
     ServerSocket workerSocket;
     Socket userProvider;
     Socket workerProvider;
-    ArrayList<Socket> Workers = new ArrayList<Socket>();
+    HashMap<InetAddress, Socket> Workers = new HashMap<InetAddress, Socket>();
+    Set<InetAddress> workerAddr = new HashSet<>();
     int numberOfWorkers;
 
     Master(int numberOfWorkers){
@@ -25,7 +26,7 @@ public class Master extends Thread{
 
     }
 
-     void openServer() {
+     void  openServer() {
         System.out.println("Opened Server");
         try {
             userSocket = new ServerSocket(4020);
@@ -35,7 +36,7 @@ public class Master extends Thread{
                 userProvider = userSocket.accept();
                 System.out.println("User Accepted");
 
-                Thread t = new SocketHandler(workerSocket, userProvider, 20);
+                Thread t = new SocketHandler(workerSocket, userProvider, 20, Workers, workerAddr);
                 t.start();
 
             }
