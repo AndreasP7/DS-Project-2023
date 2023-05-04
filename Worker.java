@@ -24,10 +24,6 @@ public class Worker {
         Socket requestSocket = null;
 
         try {
-
-
-
-
             while (true) {
                 requestSocket = new Socket(this.host, this.port);
                 out = new ObjectOutputStream(requestSocket.getOutputStream());

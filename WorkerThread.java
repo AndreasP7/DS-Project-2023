@@ -27,8 +27,10 @@ public class WorkerThread extends Thread{
 
         try{
             Map<String, Double> results = Calculate(Request);
+            System.out.println("Calculated chunk");
             out.writeObject(results);
             out.flush();
+            System.out.println("Chunk Sent");
 
 
         }catch (UnknownHostException unknownHost) {
@@ -38,7 +40,6 @@ public class WorkerThread extends Thread{
         }
         finally {
             try {
-                in.close();
                 out.close();
             } catch (IOException ioException) {
                 ioException.printStackTrace();

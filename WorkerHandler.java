@@ -7,23 +7,21 @@ import java.util.Map;
 public class WorkerHandler extends Thread{
 
     ObjectInputStream inWorker;
-    List<Map<String,Double>> Iresults;
+    SocketHandler socketHandler;
 
-    public WorkerHandler( ObjectInputStream inWorker, List<Map<String,Double>> Iresults){
+    public WorkerHandler( ObjectInputStream inWorker, SocketHandler socketHandler){
         this.inWorker = inWorker;
-        this.Iresults = Iresults;
+        this.socketHandler = socketHandler;
 
     }
 
     @Override
     public void run() {
 
-
-
-
-
             try{
-                Iresults.add((Map<String, Double>) inWorker.readObject());
+                socketHandler.addResult((Map<String, Double>) inWorker.readObject());
+                System.out.println("Received Results");
+
             }catch(IOException e){
                 e.printStackTrace();
 

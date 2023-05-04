@@ -36,7 +36,7 @@ public class Master extends Thread{
                 userProvider = userSocket.accept();
                 System.out.println("User Accepted");
 
-                Thread t = new SocketHandler(workerSocket, userProvider, 20, Workers, workerAddr, minWorkers = 2);
+                Thread t = new SocketHandler(workerSocket, userProvider, 20, Workers, workerAddr, minWorkers );
                 t.start();
 
             }
@@ -73,6 +73,6 @@ public class Master extends Thread{
             throw new RuntimeException(e);
         }
         System.out.printf(String.format("Started Master. Minimum number of Workers needed: %d \n",n));
-        new Master(2).openServer();
+        new Master(n).openServer();
     }
 }

@@ -8,6 +8,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Result;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -30,9 +31,11 @@ public class SocketHandler extends Thread{
 
     Socket workerProvider;
 
+     int threadsReturned =0;
+
     int nChunks;
 
-    List<Map<String,Double>> Iresults = new ArrayList<Map<String,Double>>();
+    public List<Map<String,Double>> Iresults = new ArrayList<Map<String,Double>>();
 
     List<Chunk> Chunks = new ArrayList<Chunk>();
 
@@ -46,7 +49,7 @@ public class SocketHandler extends Thread{
 
     }
 
-    synchronized public void run(){
+    public void run(){
         try{
             ObjectOutputStream outUser = new ObjectOutputStream(userProvider.getOutputStream());
             ObjectInputStream inUser = new ObjectInputStream(userProvider.getInputStream());
@@ -54,6 +57,7 @@ public class SocketHandler extends Thread{
 
             GPX userGPX = (GPX) inUser.readObject();
             List<Map<String,String>> waypoints = parseGPX(userGPX);
+            System.out.printf(String.format("GPX received from User %d", userGPX.getUid()));
 
             Map<String,Double> results = new HashMap<String,Double>();
 
@@ -64,7 +68,8 @@ public class SocketHandler extends Thread{
             //new thread Round Robin
 
             Socket current;
-            while(mapped.size() > Iresults.size()){
+            while(mapped.size() > chunk){
+                System.out.println("Chunk "+chunk);
 
                 while(workerAddr.size()<minWorkers){
                     System.out.println("Waiting for "+(minWorkers - workerAddr.size())+" workers...");
@@ -82,23 +87,20 @@ public class SocketHandler extends Thread{
                 ObjectOutputStream outWorker = new ObjectOutputStream(current.getOutputStream());
                 ObjectInputStream inWorker = new ObjectInputStream(current.getInputStream());
 
-                outWorker.writeObject(mapped.get(counter).get(userGPX.getUid()));
+
+                outWorker.writeObject(mapped.get(chunk).get(userGPX.getUid()));
                 outWorker.flush();
 
-                Thread t = new WorkerHandler(inWorker, Iresults);
+                System.out.printf(String.format("Chunk %d sent to Worker %s\n",chunk, current.getInetAddress().getHostAddress()));
+
+                Thread t = new WorkerHandler(inWorker, this);
                 t.start();
 
 
 
                 workerProvider = workerSocket.accept();
-                while(workerProvider.getInetAddress() != current.getInetAddress()){
-                    workerProvider = workerSocket.accept();
-                    workerAddr.add(workerProvider.getInetAddress());
-                    Workers.put(workerProvider.getInetAddress(),workerProvider);
-
-
-
-                }
+                workerAddr.add(workerProvider.getInetAddress());
+                Workers.put(workerProvider.getInetAddress(),workerProvider);
 
 
 
@@ -106,18 +108,31 @@ public class SocketHandler extends Thread{
 
 
 
-                if (counter == workerAddr.size()){
+
+
+                if (counter == workerAddr.size()-1){
                     counter = 0;
 
                 }
                 else{
                     counter++;
                 }
+                chunk++;
+
+
             }
 
+            while(threadsReturned < mapped.size()){
+                System.out.println("Waiting for results...threads returned: "+ this.threadsReturned);
+
+            }
+
+            System.out.println(Iresults);
             userGPX.setResults(Reduce(Iresults));
             outUser.writeObject(userGPX);
             outUser.flush();
+
+
 
         }
         catch(IOException e){
@@ -127,6 +142,14 @@ public class SocketHandler extends Thread{
             throw new RuntimeException(e);
         }
 
+
+    }
+
+
+    synchronized public void addResult(Map<String, Double> result){
+        Iresults.add(result);
+        System.out.println("Added intermediate result. Results size: "+Iresults.size());
+        this.threadsReturned ++;
 
     }
 
@@ -224,18 +247,28 @@ public class SocketHandler extends Thread{
 
     public Map<String,Double> Reduce(List<Map<String,Double>> Iresults){
         Map<String,Double> results = new HashMap<String,Double>();
-
-        Double time[] = new Double[Iresults.size()];
-        Double speed[] =new Double[Iresults.size()];
-        Double distance[] = new Double[Iresults.size()];
-        Double elevation[] = new Double[Iresults.size()];
+        System.out.println(Iresults.size());
+        Double[] time = new Double[Iresults.size()];
+        Double[] speed =new Double[Iresults.size()];
+        Double[] distance = new Double[Iresults.size()];
+        Double[] elevation = new Double[Iresults.size()];
 
         Double totalTime = 0.0;
         Double totalDistance = 0.0;
         Double totalElevation = 0.0;
         Double averageSpeed = 0.0;
 
-        for (int i =0; i<= Iresults.size();i++){
+        int counter =0;
+        for( Map<String,Double> r: Iresults){
+            time[counter] = r.get("totalTime");
+            speed[counter] = r.get("averageSpeed");
+            distance[counter] = r.get("totalDistance");
+            elevation[counter] = r.get("totalElevation");
+            counter++;
+        }
+
+        for (int i =0; i< Iresults.size();i++){
+
             totalTime += time[i];
             totalDistance += distance[i];
             totalElevation += elevation[i];
