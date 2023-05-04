@@ -99,7 +99,9 @@ public class SocketHandler extends Thread{
 
 
                 workerProvider = workerSocket.accept();
-                workerAddr.add(workerProvider.getInetAddress());
+                if(!workerAddr.contains(workerProvider.getInetAddress())){
+                    workerAddr.add(workerProvider.getInetAddress());
+                }
                 Workers.put(workerProvider.getInetAddress(),workerProvider);
 
 
@@ -124,6 +126,12 @@ public class SocketHandler extends Thread{
 
             while(threadsReturned < mapped.size()){
                 System.out.println("Waiting for results...threads returned: "+ this.threadsReturned);
+                try{
+                    Thread.sleep(200);
+                }catch (InterruptedException e){
+                    e.printStackTrace();
+                }
+
 
             }
 
