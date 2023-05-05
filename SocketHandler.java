@@ -24,6 +24,9 @@ public class SocketHandler extends Thread{
 
     List<InetAddress> workerAddr;
     HashMap<InetAddress, Socket> Workers;
+    HashMap<InetAddress, ObjectOutputStream> WorkersOut;
+    HashMap<InetAddress, ObjectInputStream> WorkersIn;
+
 
     int minWorkers;
     Socket userProvider;
@@ -39,13 +42,16 @@ public class SocketHandler extends Thread{
 
     List<Chunk> Chunks = new ArrayList<Chunk>();
 
-    public SocketHandler(ServerSocket workerSocket, Socket userProvider, int nChunks, HashMap<InetAddress, Socket> Workers , List<InetAddress> workerAddr, int minWorkers){
+    public SocketHandler(ServerSocket workerSocket, Socket userProvider, int nChunks, HashMap<InetAddress, Socket> Workers ,HashMap<InetAddress, ObjectOutputStream> WorkersOut,HashMap<InetAddress, ObjectInputStream> WorkersIn, List<InetAddress> workerAddr, int minWorkers){
         this.workerSocket = workerSocket;
         this.userProvider = userProvider;
         this.nChunks = nChunks;
         this.Workers = Workers;
         this.workerAddr = workerAddr;
         this.minWorkers = minWorkers;
+        this.WorkersIn = WorkersIn;
+        this.WorkersOut = WorkersOut;
+
 
     }
 
@@ -77,6 +83,9 @@ public class SocketHandler extends Thread{
                     if (!workerAddr.contains(workerProvider.getInetAddress())){
                         workerAddr.add(workerProvider.getInetAddress());
                         Workers.put(workerProvider.getInetAddress(),workerProvider);
+                        WorkersIn.put(workerProvider.getInetAddress(),new ObjectInputStream(workerProvider.getInputStream()));
+                        WorkersOut.put(workerProvider.getInetAddress(),new ObjectOutputStream(workerProvider.getOutputStream()));
+
 
                     }
 
@@ -84,8 +93,8 @@ public class SocketHandler extends Thread{
 
                 }
                 current = Workers.get(workerAddr.get(counter));
-                ObjectOutputStream outWorker = new ObjectOutputStream(current.getOutputStream());
-                ObjectInputStream inWorker = new ObjectInputStream(current.getInputStream());
+                ObjectOutputStream outWorker = WorkersOut.get(workerAddr.get(counter));
+                ObjectInputStream inWorker = WorkersIn.get(workerAddr.get(counter));
 
 
                 outWorker.writeObject(mapped.get(chunk).get(userGPX.getUid()));
@@ -103,6 +112,8 @@ public class SocketHandler extends Thread{
                     workerAddr.add(workerProvider.getInetAddress());
                 }
                 Workers.put(workerProvider.getInetAddress(),workerProvider);
+                WorkersIn.put(workerProvider.getInetAddress(),new ObjectInputStream(workerProvider.getInputStream()));
+                WorkersOut.put(workerProvider.getInetAddress(),new ObjectOutputStream(workerProvider.getOutputStream()));
 
 
 

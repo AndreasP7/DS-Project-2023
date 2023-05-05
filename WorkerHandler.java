@@ -16,10 +16,10 @@ public class WorkerHandler extends Thread{
     }
 
     @Override
-    public void run() {
+    synchronized public void run() {
 
             try{
-                socketHandler.addResult((Map<String, Double>) inWorker.readObject());
+                this.socketHandler.addResult((Map<String, Double>) inWorker.readObject());
                 System.out.println("Received Results");
 
             }catch(IOException e){

@@ -18,6 +18,9 @@ public class Master extends Thread{
     Socket workerProvider;
     HashMap<InetAddress, Socket> Workers = new HashMap<InetAddress, Socket>();
     List<InetAddress> workerAddr = new ArrayList<>();
+
+    HashMap<InetAddress, ObjectOutputStream> WorkersOut = new HashMap<InetAddress, ObjectOutputStream>();
+    HashMap<InetAddress, ObjectInputStream> WorkersIn= new HashMap<InetAddress, ObjectInputStream>();
     int minWorkers;
 
     Master(int numberOfWorkers){
@@ -36,7 +39,7 @@ public class Master extends Thread{
                 userProvider = userSocket.accept();
                 System.out.println("User Accepted");
 
-                Thread t = new SocketHandler(workerSocket, userProvider, 20, Workers, workerAddr, minWorkers );
+                Thread t = new SocketHandler(workerSocket, userProvider, 20, Workers,WorkersOut,WorkersIn, workerAddr, minWorkers );
                 t.start();
 
             }
