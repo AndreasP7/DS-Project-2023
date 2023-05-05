@@ -41,14 +41,16 @@ public class Master extends Thread{
 
                 Thread t = new SocketHandler(workerSocket, userProvider, 20, Workers,WorkersOut,WorkersIn, workerAddr, minWorkers );
                 t.start();
+                sleep(300);
 
             }
             
         }
         catch (IOException ioException){
             ioException.printStackTrace();
-        }
-        finally {
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
             try {
                 workerProvider.close();
                 userProvider.close();
@@ -57,6 +59,7 @@ public class Master extends Thread{
             }
         }
     }
+
 
 
 

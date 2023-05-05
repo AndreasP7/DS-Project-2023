@@ -10,11 +10,13 @@ public class WorkerThread extends Thread{
 
     ObjectOutputStream out = null;
     ObjectInputStream in = null;
-    WorkerThread( int wid, ObjectOutputStream out, ObjectInputStream in){
-
+    WorkerThread( int wid, Chunk Request, ObjectOutputStream out){
+        this.Request = Request;
         this.wid = wid;
         this.out = out;
-        this.in = in;
+
+
+
 
     }
     public WorkerThread() {
@@ -24,10 +26,6 @@ public class WorkerThread extends Thread{
     public void run(){
 
         try{
-            System.out.println("Waiting for Request");
-            Chunk Request = ( Chunk) in.readObject();
-            System.out.println("Request received");
-
             Map<String, Double> results = Calculate(Request);
             System.out.println("Calculated chunk");
             out.writeObject(results);
@@ -39,8 +37,6 @@ public class WorkerThread extends Thread{
             System.err.println("You are trying to connect to an unknown host!");
         } catch (IOException ioException) {
             ioException.printStackTrace();
-        }catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
         }
         finally {
             try {

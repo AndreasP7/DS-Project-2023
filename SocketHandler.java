@@ -21,11 +21,12 @@ public class SocketHandler extends Thread{
     ObjectInputStream in2;
     ObjectOutputStream out2;
 
+    static final CustomLock lock = new CustomLock();
 
     List<InetAddress> workerAddr;
-    HashMap<InetAddress, Socket> Workers;
-    HashMap<InetAddress, ObjectOutputStream> WorkersOut;
-    HashMap<InetAddress, ObjectInputStream> WorkersIn;
+     HashMap<InetAddress, Socket> Workers;
+     HashMap<InetAddress, ObjectOutputStream> WorkersOut;
+     HashMap<InetAddress, ObjectInputStream> WorkersIn;
 
 
     int minWorkers;
@@ -74,65 +75,66 @@ public class SocketHandler extends Thread{
             //new thread Round Robin
 
             Socket current;
-            while(mapped.size() > chunk){
-                System.out.println("Chunk "+chunk);
+            synchronized (lock) {
 
-                while(workerAddr.size()<minWorkers){
-                    System.out.println("Waiting for "+(minWorkers - workerAddr.size())+" workers...");
-                    workerProvider = workerSocket.accept();
-                    if (!workerAddr.contains(workerProvider.getInetAddress())){
-                        workerAddr.add(workerProvider.getInetAddress());
-                        Workers.put(workerProvider.getInetAddress(),workerProvider);
-                        WorkersIn.put(workerProvider.getInetAddress(),new ObjectInputStream(workerProvider.getInputStream()));
-                        WorkersOut.put(workerProvider.getInetAddress(),new ObjectOutputStream(workerProvider.getOutputStream()));
+
+                while (mapped.size() > chunk) {
+                    System.out.println("Chunk " + chunk);
+
+                    while (workerAddr.size() < minWorkers) {
+                        System.out.println("Waiting for " + (minWorkers - workerAddr.size()) + " workers...");
+                        lock.lock();
+                        workerProvider = workerSocket.accept();
+                        lock.unlock();
+
+                        if (!workerAddr.contains(workerProvider.getInetAddress())) {
+                            workerAddr.add(workerProvider.getInetAddress());
+                            Workers.put(workerProvider.getInetAddress(), workerProvider);
+                            WorkersIn.put(workerProvider.getInetAddress(), new ObjectInputStream(workerProvider.getInputStream()));
+                            WorkersOut.put(workerProvider.getInetAddress(), new ObjectOutputStream(workerProvider.getOutputStream()));
+
+
+                        }
 
 
                     }
+                    current = Workers.get(workerAddr.get(counter));
+                    ObjectOutputStream outWorker = WorkersOut.get(workerAddr.get(counter));
+                    ObjectInputStream inWorker = WorkersIn.get(workerAddr.get(counter));
 
+
+                    outWorker.writeObject(mapped.get(chunk).get(userGPX.getUid()));
+                    outWorker.flush();
+
+                    System.out.printf(String.format("Chunk %d sent to Worker %s\n", chunk, current.getInetAddress().getHostAddress()));
+
+
+                    Thread t = new WorkerHandler(inWorker, this);
+                    t.start();
+
+
+                    lock.lock();
+                    workerProvider = workerSocket.accept();
+                    lock.unlock();
+
+                    if (!workerAddr.contains(workerProvider.getInetAddress())) {
+                        workerAddr.add(workerProvider.getInetAddress());
+                    }
+                    Workers.put(workerProvider.getInetAddress(), workerProvider);
+                    WorkersIn.put(workerProvider.getInetAddress(), new ObjectInputStream(workerProvider.getInputStream()));
+                    WorkersOut.put(workerProvider.getInetAddress(), new ObjectOutputStream(workerProvider.getOutputStream()));
+
+
+                    if (counter == workerAddr.size() - 1) {
+                        counter = 0;
+
+                    } else {
+                        counter++;
+                    }
+                    chunk++;
 
 
                 }
-                current = Workers.get(workerAddr.get(counter));
-                ObjectOutputStream outWorker = WorkersOut.get(workerAddr.get(counter));
-                ObjectInputStream inWorker = WorkersIn.get(workerAddr.get(counter));
-
-
-                outWorker.writeObject(mapped.get(chunk).get(userGPX.getUid()));
-                outWorker.flush();
-
-                System.out.printf(String.format("Chunk %d sent to Worker %s\n",chunk, current.getInetAddress().getHostAddress()));
-
-                Thread t = new WorkerHandler(inWorker, this);
-                t.start();
-
-
-
-                workerProvider = workerSocket.accept();
-                if(!workerAddr.contains(workerProvider.getInetAddress())){
-                    workerAddr.add(workerProvider.getInetAddress());
-                }
-                Workers.put(workerProvider.getInetAddress(),workerProvider);
-                WorkersIn.put(workerProvider.getInetAddress(),new ObjectInputStream(workerProvider.getInputStream()));
-                WorkersOut.put(workerProvider.getInetAddress(),new ObjectOutputStream(workerProvider.getOutputStream()));
-
-
-
-
-
-
-
-
-
-                if (counter == workerAddr.size()-1){
-                    counter = 0;
-
-                }
-                else{
-                    counter++;
-                }
-                chunk++;
-
-
             }
 
             while(threadsReturned < mapped.size()){
@@ -150,6 +152,7 @@ public class SocketHandler extends Thread{
             userGPX.setResults(Reduce(Iresults));
             outUser.writeObject(userGPX);
             outUser.flush();
+            System.out.println(lock.locked);
 
 
 
@@ -159,6 +162,10 @@ public class SocketHandler extends Thread{
 
         }catch(ClassNotFoundException e){
             throw new RuntimeException(e);
+        }catch (InterruptedException e){
+            System.out.println("Error");
+        }finally {
+            lock.unlock();
         }
 
 
@@ -303,8 +310,25 @@ public class SocketHandler extends Thread{
 
     }
 
+    static class CustomLock {
+        private boolean locked = false;
 
+        public synchronized void lock() throws InterruptedException {
+            while (locked) {
+                wait();
+            }
+            locked = true;
+        }
 
-
-
+        public synchronized void unlock() {
+            locked = false;
+            notifyAll();
+        }
+    }
 }
+
+
+
+
+
+
