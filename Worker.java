@@ -29,11 +29,9 @@ public class Worker {
                 out = new ObjectOutputStream(requestSocket.getOutputStream());
                 in = new ObjectInputStream(requestSocket.getInputStream());
 
-                System.out.println("Waiting for Request");
-                Chunk Request = ( Chunk) in.readObject();
-                System.out.println("Request received");
 
-                Thread t = new WorkerThread(wid, Request, out);
+
+                Thread t = new WorkerThread(wid,  out, in);
                 t.start();
             }
 
@@ -45,9 +43,7 @@ public class Worker {
             System.err.println("You are trying to connect to an unknown host!");
         } catch (IOException ioException) {
             ioException.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } finally {
+        }  finally {
             try {
                 in.close();
                 out.close();
