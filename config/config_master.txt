@@ -1,2 +1,2 @@
-number of workers=2
+number of workers=1
 

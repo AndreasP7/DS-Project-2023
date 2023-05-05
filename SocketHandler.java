@@ -79,7 +79,7 @@ public class SocketHandler extends Thread{
 
 
                 while (mapped.size() > chunk) {
-                    System.out.println("Chunk " + chunk);
+
 
                     while (workerAddr.size() < minWorkers) {
                         System.out.println("Waiting for " + (minWorkers - workerAddr.size()) + " workers...");
@@ -257,7 +257,7 @@ public class SocketHandler extends Thread{
         }
 
 
-        System.out.println(Chunks.size());
+
 
         List<Map<Integer, Chunk>> mapped = new ArrayList<Map<Integer, Chunk>>();
 
@@ -301,10 +301,10 @@ public class SocketHandler extends Thread{
             averageSpeed += speed[i]/Iresults.size();
         }
 
-        results.put("Total Time",totalTime);
-        results.put("Total Distance",totalDistance);
-        results.put("Total Elevation",totalElevation);
-        results.put("Average Speed",averageSpeed);
+        results.put("totalTime",totalTime);
+        results.put("totalDistance",totalDistance);
+        results.put("totalElevation",totalElevation);
+        results.put("averageSpeed",averageSpeed);
 
         return results;
 

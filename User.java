@@ -22,7 +22,7 @@ public class User  {
         try{
 
             GPX gpx = new GPX(this.path, this.uid);
-            System.out.println(SocketHandler.parseGPX(gpx));
+
 
             String host = "localhost";
             requestSocket = new Socket(host, this.port);
@@ -35,8 +35,16 @@ public class User  {
             out.flush();
 
             gpx = (GPX) in.readObject();
+            ;
 
-            System.out.println("Result " + gpx.getResults());
+            System.out.println("Results: ");
+            System.out.println("Total Time:" + gpx.getResults().get("totalTime") );
+            System.out.println("Average Speed:" + gpx.getResults().get("averageSpeed") );
+            System.out.println("Total Distance:" + gpx.getResults().get("totalDistance") );
+            System.out.println("Total Elevation:" + gpx.getResults().get("totalElevation") );
+
+
+
 
 
             
@@ -59,7 +67,7 @@ public class User  {
     }
 
     public static void main(String[] args) {
-        new User("gpxs/route1.gpx", 4020, 0).run();
+        new User("gpxs/route2.gpx", 4020, 0).run();
 
 
     }
