@@ -1,0 +1,4 @@
+host=localhost
+port =4020
+id=0
+path =gpxs\route1.gpx 

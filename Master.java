@@ -15,13 +15,17 @@ public class Master extends Thread{
     ServerSocket userSocket;
     ServerSocket workerSocket;
     Socket userProvider;
-    Socket workerProvider;
-    HashMap<InetAddress, Socket> Workers = new HashMap<InetAddress, Socket>();
+    Socket workerProvider;//Worker Sockets
+
+    HashMap<InetAddress, Socket> Workers = new HashMap<InetAddress, Socket>();//Worker addresses
+
     List<InetAddress> workerAddr = new ArrayList<>();
 
-    HashMap<InetAddress, ObjectOutputStream> WorkersOut = new HashMap<InetAddress, ObjectOutputStream>();
+    HashMap<InetAddress, ObjectOutputStream> WorkersOut = new HashMap<InetAddress, ObjectOutputStream>(); //Worker in and out streams
     HashMap<InetAddress, ObjectInputStream> WorkersIn= new HashMap<InetAddress, ObjectInputStream>();
-    int minWorkers;
+
+    int minWorkers; //minimum number of workers needed to start map reduce
+
 
     Master(int numberOfWorkers){
         this.minWorkers = numberOfWorkers;
@@ -65,8 +69,9 @@ public class Master extends Thread{
 
     public static void main(String[] args) {
 
-        int n = 0;
 
+        //read config file
+        int n = 0;
         File file = new File("config/config_master.txt");
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));

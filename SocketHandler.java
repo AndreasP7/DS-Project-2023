@@ -21,7 +21,7 @@ public class SocketHandler extends Thread{
     ObjectInputStream in2;
     ObjectOutputStream out2;
 
-    static final CustomLock lock = new CustomLock();
+    static final CustomLock lock = new CustomLock(); //used to lock workerSocket.accept(), so that 2 threads don't accept the same worker socket at the same time
 
     List<InetAddress> workerAddr;
      HashMap<InetAddress, Socket> Workers;
@@ -39,7 +39,7 @@ public class SocketHandler extends Thread{
 
     int nChunks;
 
-    public List<Map<String,Double>> Iresults = new ArrayList<Map<String,Double>>();
+    public List<Map<String,Double>> Iresults = new ArrayList<Map<String,Double>>(); //Array to store intermediate results
 
     List<Chunk> Chunks = new ArrayList<Chunk>();
 
@@ -64,24 +64,23 @@ public class SocketHandler extends Thread{
 
             GPX userGPX = (GPX) inUser.readObject();
             List<Map<String,String>> waypoints = parseGPX(userGPX);
-            System.out.printf(String.format("GPX received from User %d", userGPX.getUid()));
+            System.out.printf(String.format("GPX received from User %d\n", userGPX.getUid()));
 
             Map<String,Double> results = new HashMap<String,Double>();
 
-            List<Map<Integer, Chunk>> mapped = this.map(waypoints, userGPX.getUid());
+            List<Map<Integer, Chunk>> mapped = this.map(waypoints, userGPX.getUid()); //map chunks
 
-            int chunk = 0;
-            int counter = 0;
-            //new thread Round Robin
+            int chunk = 0; //counter for chunks
+            int counter = 0; //counter for workers. Used to simulate Round Robin
 
-            Socket current;
+            Socket current; //current socket in Round Robin
             synchronized (lock) {
 
 
                 while (mapped.size() > chunk) {
 
 
-                    while (workerAddr.size() < minWorkers) {
+                    while (workerAddr.size() < minWorkers) { //connect to minimum amount of workers
                         System.out.println("Waiting for " + (minWorkers - workerAddr.size()) + " workers...");
                         lock.lock();
                         workerProvider = workerSocket.accept();
@@ -98,18 +97,18 @@ public class SocketHandler extends Thread{
 
 
                     }
-                    current = Workers.get(workerAddr.get(counter));
+                    current = Workers.get(workerAddr.get(counter)); //get current worker in Round Robin queue
                     ObjectOutputStream outWorker = WorkersOut.get(workerAddr.get(counter));
                     ObjectInputStream inWorker = WorkersIn.get(workerAddr.get(counter));
 
 
-                    outWorker.writeObject(mapped.get(chunk).get(userGPX.getUid()));
+                    outWorker.writeObject(mapped.get(chunk).get(userGPX.getUid())); //send chunk
                     outWorker.flush();
 
                     System.out.printf(String.format("Chunk %d sent to Worker %s\n", chunk, current.getInetAddress().getHostAddress()));
 
 
-                    Thread t = new WorkerHandler(inWorker, this);
+                    Thread t = new WorkerHandler(inWorker, this);//new thread to receive results
                     t.start();
 
 
@@ -148,11 +147,11 @@ public class SocketHandler extends Thread{
 
             }
 
-            System.out.println(Iresults);
+
             userGPX.setResults(Reduce(Iresults));
             outUser.writeObject(userGPX);
             outUser.flush();
-            System.out.println(lock.locked);
+
 
 
 
@@ -179,7 +178,7 @@ public class SocketHandler extends Thread{
 
     }
 
-    public static List<Map<String,String>> parseGPX(GPX gpxFile){
+    public static List<Map<String,String>> parseGPX(GPX gpxFile){ //function to parse gpx waypoint info from gpx files
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         List<Map<String,String>> waypoints = new ArrayList<Map<String,String>>();
         try {
@@ -238,13 +237,13 @@ public class SocketHandler extends Thread{
 
         chunk = new Chunk(id);
         int k =0;
-        for( Map<String,String> w : waypoints){
+        for( Map<String,String> w : waypoints){ //add each waypoint to a chunk, until the chunk is full
             chunk.addWp(w);
             if(chunk.getSize() == n-1 ){
                 Chunks.add(chunk);
 
                 chunk = new Chunk(id);
-                chunk.addWp(w);
+                chunk.addWp(w); //add last waypoint to the new chunk, so that chunk i starts from the waypoint that chunk i-1 finished
 
             }
 
@@ -271,9 +270,9 @@ public class SocketHandler extends Thread{
         return mapped;
     }
 
-    public Map<String,Double> Reduce(List<Map<String,Double>> Iresults){
+    public Map<String,Double> Reduce(List<Map<String,Double>> Iresults){//reduce results
         Map<String,Double> results = new HashMap<String,Double>();
-        System.out.println(Iresults.size());
+
         Double[] time = new Double[Iresults.size()];
         Double[] speed =new Double[Iresults.size()];
         Double[] distance = new Double[Iresults.size()];
