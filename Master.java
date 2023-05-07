@@ -49,7 +49,7 @@ public class Master extends Thread{
                 sleep(300);
                 connections ++;
 
-                System.out.println(this.getAverage());
+
 
             }
 
