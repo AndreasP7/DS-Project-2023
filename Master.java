@@ -73,7 +73,7 @@ public class Master extends Thread{
         //read config file
         int n = 0;
         File file = new File("config/config_master.txt");
-        try {
+        /*try {
             BufferedReader br = new BufferedReader(new FileReader(file));
 
             n =  Integer.parseInt(br.readLine().split("=")[1]);
@@ -82,8 +82,24 @@ public class Master extends Thread{
             e.printStackTrace();
         }catch(IOException e){
             throw new RuntimeException(e);
+        }*/
+
+        try{
+            Properties prop=new Properties();
+            FileInputStream ip= new FileInputStream("config/config_master.properties");
+
+            prop.load(ip);
+            n = Integer.parseInt(prop.getProperty("number_of_workers"));
+
+            System.out.printf(String.format("Started Master. Minimum number of Workers needed: %d \n",n));
+            new Master(n).openServer();
+
+
+
+        }catch(IOException e){
+            e.printStackTrace();
+
         }
-        System.out.printf(String.format("Started Master. Minimum number of Workers needed: %d \n",n));
-        new Master(n).openServer();
+
     }
 }

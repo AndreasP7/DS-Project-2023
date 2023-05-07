@@ -64,25 +64,27 @@ public class Worker {
 
         String host = "";
         int id=0;
-        File file = new File("config/config_worker.txt");
-            try {
-                BufferedReader br = new BufferedReader(new FileReader(file));
-                host = br.readLine().split("=")[1];
-                id =  Integer.parseInt(br.readLine().split("=")[1]);
-                br.close();
-            }catch(FileNotFoundException e){
-                e.printStackTrace();
-            }catch(IOException e){
-                throw new RuntimeException(e);
-            }
-        System.out.printf(String.format("Started Worker %d. Connected to Master-Server %s \n",id, host));
+        int port;
 
 
-        new Worker(3000, id,host).run();
-       
+        try{
+            Properties prop=new Properties();
+            FileInputStream ip= new FileInputStream("config/config_worker.properties");
 
-        
-        
-        
+            prop.load(ip);
+
+            host = prop.getProperty("host");
+            port = Integer.parseInt(prop.getProperty("port"));
+            id = Integer.parseInt(prop.getProperty("id"));
+
+            new Worker(port, id,host).run();
+            System.out.printf(String.format("Started Worker %d. Connected to Master-Server %s \n",id, host));
+
+
+        }catch(IOException e){
+            e.printStackTrace();
+
+        }
+
     }
 }
