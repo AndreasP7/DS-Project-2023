@@ -9,6 +9,8 @@ public class User  {
 
     String host;
 
+    Map<String, Double> results;
+
     List <GPX> gpxList = new ArrayList<>();
     User( int port, int uid, String host){
 
@@ -50,12 +52,27 @@ public class User  {
 
                     gpx = (GPX) in.readObject();//get gpx with results from server
 
+
+                    results = gpx.getResults();
                     System.out.println("\n------------------------------------\n");
                     System.out.printf(String.format("Results of GPX %d :\n", counter));
-                    System.out.println("Total Time:" + gpx.getResults().get("totalTime") );
-                    System.out.println("Average Speed:" + gpx.getResults().get("averageSpeed") );
-                    System.out.println("Total Distance:" + gpx.getResults().get("totalDistance") );
-                    System.out.println("Total Elevation:" + gpx.getResults().get("totalElevation") );
+                    System.out.println("Total Time:" + results.get("totalTime") );
+                    System.out.println("Average Speed:" + results.get("averageSpeed") );
+                    System.out.println("Total Distance:" + results.get("totalDistance") );
+                    System.out.println("Total Elevation:" + results.get("totalElevation") );
+
+                    try {
+                        FileWriter myWriter = new FileWriter(String.format("results/results_user%d_gpx%d.txt",this.uid,counter));
+                        myWriter.write("Total Time:" + results.get("totalTime")+"\n");
+                        myWriter.write("Average Speed:" + results.get("averageSpeed")+"\n");
+                        myWriter.write("Total Distance:" + results.get("totalDistance")+"\n");
+                        myWriter.write("Total Elevation:" + results.get("totalElevation")+"\n");
+                        myWriter.close();
+
+                    } catch (IOException e) {
+                        System.out.println("An error occurred.");
+                        e.printStackTrace();
+                    }
 
                     counter++;
 
@@ -104,8 +121,11 @@ public class User  {
             System.out.printf(String.format("Started User %d. Connected to Master-Server %s \n",id, host));
             User u =new User(port, id, host);
             for (String path : paths){
-                System.out.println("Added gpx file in path: "+path);
-                u.addGPX(path);
+                if (path != null){
+                    System.out.println("Added gpx file in path: "+path);
+                    u.addGPX(path);
+                }
+
             }
             u.run();
 

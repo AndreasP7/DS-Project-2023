@@ -1,0 +1,4 @@
+Total Time:433.0
+Average Speed:0.00396126732154997
+Total Distance:1.7150512326607275
+Total Elevation:6.98

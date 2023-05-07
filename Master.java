@@ -1,11 +1,4 @@
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-import org.w3c.dom.Node;
+
 import java.io.*;
 import java.util.*;
 import java.net.*;
@@ -72,17 +65,6 @@ public class Master extends Thread{
 
         //read config file
         int n = 0;
-        File file = new File("config/config_master.txt");
-        /*try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-
-            n =  Integer.parseInt(br.readLine().split("=")[1]);
-            br.close();
-        }catch(FileNotFoundException e){
-            e.printStackTrace();
-        }catch(IOException e){
-            throw new RuntimeException(e);
-        }*/
 
         try{
             Properties prop=new Properties();
