@@ -16,7 +16,12 @@ import java.util.*;
 
 
 public class SocketHandler extends Thread{
+
+    Master master;
+
     ObjectInputStream in1;
+
+
     ObjectOutputStream out1;
     ObjectInputStream in2;
     ObjectOutputStream out2;
@@ -28,7 +33,7 @@ public class SocketHandler extends Thread{
      HashMap<InetAddress, ObjectOutputStream> WorkersOut;
      HashMap<InetAddress, ObjectInputStream> WorkersIn;
 
-
+    Map<String,Double> userResults;
     int minWorkers;
     Socket userProvider;
     ServerSocket workerSocket;
@@ -43,7 +48,7 @@ public class SocketHandler extends Thread{
 
     List<Chunk> Chunks = new ArrayList<Chunk>();
 
-    public SocketHandler(ServerSocket workerSocket, Socket userProvider, int nChunks, HashMap<InetAddress, Socket> Workers ,HashMap<InetAddress, ObjectOutputStream> WorkersOut,HashMap<InetAddress, ObjectInputStream> WorkersIn, List<InetAddress> workerAddr, int minWorkers){
+    public SocketHandler(ServerSocket workerSocket, Socket userProvider, int nChunks, HashMap<InetAddress, Socket> Workers ,HashMap<InetAddress, ObjectOutputStream> WorkersOut,HashMap<InetAddress, ObjectInputStream> WorkersIn, List<InetAddress> workerAddr, int minWorkers, Master master){
         this.workerSocket = workerSocket;
         this.userProvider = userProvider;
         this.nChunks = nChunks;
@@ -52,6 +57,7 @@ public class SocketHandler extends Thread{
         this.minWorkers = minWorkers;
         this.WorkersIn = WorkersIn;
         this.WorkersOut = WorkersOut;
+        this.master = master;
 
 
     }
@@ -147,10 +153,14 @@ public class SocketHandler extends Thread{
 
             }
 
+            userResults = Reduce(Iresults);
 
-            userGPX.setResults(Reduce(Iresults));
+            int userId = userGPX.getUid();
+            userGPX.setResults (userResults);
             outUser.writeObject(userGPX);
             outUser.flush();
+            this.master.addResult(userId,userResults);
+
 
 
 
