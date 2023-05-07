@@ -18,9 +18,9 @@ public class Master extends Thread{
     HashMap<InetAddress, ObjectOutputStream> WorkersOut = new HashMap<InetAddress, ObjectOutputStream>(); //Worker in and out streams
     HashMap<InetAddress, ObjectInputStream> WorkersIn= new HashMap<InetAddress, ObjectInputStream>();
 
-    Map<Integer, List<Map<String,Double>>> totalResults = new HashMap <Integer, List<Map<String,Double>>>();
+    Map<Integer, List<Map<String,Double>>> totalResults = new HashMap <Integer, List<Map<String,Double>>>(); //Keep total results, key is a user id and value is a list of each of the user's routes/gpx files
 
-    List<Integer> userIds = new ArrayList<Integer>();
+    List<Integer> userIds = new ArrayList<Integer>(); //Keep IDs of users
 
     int minWorkers; //minimum number of workers needed to start map reduce
 
@@ -84,8 +84,9 @@ public class Master extends Thread{
     }
 
     synchronized Map<String,Double> getAverageOfUser(int user){
+        //return the average results of the user
         Map<String,Double> results = new HashMap<String,Double>();
-        List<Map<String,Double>> userResults = totalResults.get(user);
+        List<Map<String,Double>> userResults = totalResults.get(user); //get list of user's routes results
         int n = userResults.size();
 
 
@@ -112,6 +113,7 @@ public class Master extends Thread{
 
 
     synchronized Map<String,Double> getAverage(){
+        //return the average results of all users combined
         Map<String,Double> results = new HashMap<String,Double>();
         int numberOfUsers = userIds.size();
 

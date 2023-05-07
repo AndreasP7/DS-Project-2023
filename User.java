@@ -22,7 +22,7 @@ public class User  {
 
 
     public void addGPX(String path){
-        GPX gpx = new GPX(path, this.uid); // new gpx file
+        GPX gpx = new GPX(path, this.uid); // new gpx file for the input path
         gpxList.add(gpx);
 
     }
@@ -116,7 +116,7 @@ public class User  {
             host = prop.getProperty("host");
             port = Integer.parseInt(prop.getProperty("port"));
             id = Integer.parseInt(prop.getProperty("id"));
-            paths = prop.getProperty("paths").split("%");
+            paths = prop.getProperty("paths").split("%");//each user can send multiple gpx files, each representing route
 
             System.out.printf(String.format("Started User %d. Connected to Master-Server %s \n",id, host));
             User u =new User(port, id, host);

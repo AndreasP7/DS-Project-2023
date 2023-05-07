@@ -16,7 +16,7 @@ import java.util.*;
 
 
 public class SocketHandler extends Thread{
-
+    //SocketHandler acts as Mapper and Reducer
     Master master;
 
     ObjectInputStream in1;
