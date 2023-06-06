@@ -12,30 +12,31 @@ public class MyThread extends Thread{
 
     Handler myHandler;
 
-    String arg;
+    GPX gpx;
 
-    public MyThread(String arg, Handler myHandler){
-        this.arg = arg;
+    public MyThread(GPX gpx, Handler myHandler){
+        this.gpx = gpx;
         this.myHandler = myHandler;
     }
 
     @Override
     public void run() {
         try {
-            Socket s = new Socket("172.16.1.41",8080);
+            Socket s = new Socket("192.168.1.22",4020);
             ObjectOutputStream oos =
                     new ObjectOutputStream(s.getOutputStream());
             ObjectInputStream ois =
                     new ObjectInputStream(s.getInputStream());
 
-            oos.writeUTF(arg);
+            oos.writeObject(gpx);
+
             oos.flush();
 
-            String result = ois.readUTF();
+            GPX result = (GPX)ois.readObject();
 
             Message msg = new Message();
             Bundle bundle = new Bundle();
-            bundle.putString("result",result);
+            bundle.putSerializable("results",result);
             msg.setData(bundle);
             s.close();
 

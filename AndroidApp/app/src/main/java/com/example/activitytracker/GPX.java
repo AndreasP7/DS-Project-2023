@@ -1,4 +1,9 @@
+package com.example.activitytracker;
+
+import android.net.Uri;
+
 import java.io.*;
+import java.net.URI;
 import java.util.Map;
 
 public class GPX implements Serializable {
@@ -25,6 +30,8 @@ public class GPX implements Serializable {
         return this.results;
     }
     public String getText(){return this.text;}
+
+    public void setText(String text){this.text = text;}
 
     int getUid(){
         return this.uid;
@@ -59,5 +66,6 @@ public class GPX implements Serializable {
     }
 
 
-}
 
+
+}

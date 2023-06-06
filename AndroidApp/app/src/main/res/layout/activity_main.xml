@@ -21,15 +21,36 @@
         android:layout_height="60dp"
         android:layout_marginTop="50dp"
         android:id="@+id/input"
-        android:hint="Input for the server"
-        android:textSize="35dp" />
+        android:hint="Enter user ID"
+        android:textSize="35dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginLeft="20dp"/>
+
+
+    <ListView
+        android:id="@+id/fileListView"
+        android:layout_width="match_parent"
+        android:layout_height="200dp" />
+
 
     <Button
-        android:layout_margin="60dp"
+
+        android:layout_margin="20dp"
         android:layout_width="match_parent"
-        android:layout_height="65dp"
-        android:id="@+id/btn"
-        android:textSize="40dp"
-        android:text="Send"/>
+        android:layout_height="60dp"
+        android:id="@+id/chooseFile"
+        android:textSize="30dp"
+        android:text="Choose File"
+        />
+
+    <Button
+
+        android:layout_margin="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:id="@+id/sendFile"
+        android:textSize="30dp"
+        android:text="Send File"
+        />
 
 </androidx.appcompat.widget.LinearLayoutCompat>
