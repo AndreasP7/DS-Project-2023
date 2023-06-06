@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="This will be the server result"
+        android:id="@+id/label"
+        android:textSize="30dp"
+        android:layout_marginTop="30dp"
+        />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="50dp"
+        android:id="@+id/input"
+        android:hint="Input for the server"
+        android:textSize="35dp" />
+
+    <Button
+        android:layout_margin="60dp"
+        android:layout_width="match_parent"
+        android:layout_height="65dp"
+        android:id="@+id/btn"
+        android:textSize="40dp"
+        android:text="Send"/>
+
+</androidx.appcompat.widget.LinearLayoutCompat>
