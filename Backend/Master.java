@@ -3,6 +3,8 @@ import javax.xml.transform.Result;
 import java.io.*;
 import java.util.*;
 import java.net.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 
 public class Master extends Thread{
     
@@ -11,18 +13,24 @@ public class Master extends Thread{
     Socket userProvider;
     Socket workerProvider;
 
-    HashMap<InetAddress, Socket> Workers = new HashMap<InetAddress, Socket>();//Worker Sockets
+    CustomMap<InetAddress, Socket> Workers = new CustomMap<InetAddress, Socket>();//Worker Sockets
 
     List<InetAddress> workerAddr = new ArrayList<>();//Worker addresses
 
-    HashMap<InetAddress, ObjectOutputStream> WorkersOut = new HashMap<InetAddress, ObjectOutputStream>(); //Worker in and out streams
-    HashMap<InetAddress, ObjectInputStream> WorkersIn= new HashMap<InetAddress, ObjectInputStream>();
+    CustomMap<InetAddress, ObjectOutputStream> WorkersOut = new CustomMap<InetAddress, ObjectOutputStream>(); //Worker in and out streams
+    CustomMap<InetAddress, ObjectInputStream> WorkersIn= new CustomMap<InetAddress, ObjectInputStream>();
 
-    Map<Integer, List<Map<String,Double>>> totalResults = new HashMap <Integer, List<Map<String,Double>>>(); //Keep total results, key is a user id and value is a list of each of the user's routes/gpx files
+    CustomMap<Integer, List<Map<String,Double>>> totalResults = new CustomMap <Integer, List<Map<String,Double>>>(); //Keep total results, key is a user id and value is a list of each of the user's routes/gpx files
 
     List<Integer> userIds = new ArrayList<Integer>(); //Keep IDs of users
 
     int minWorkers; //minimum number of workers needed to start map reduce
+
+    CustomMap<String,Integer> Users = new CustomMap<>();
+
+
+
+    int numberOfUsers;
 
 
     Master(int numberOfWorkers){
@@ -83,7 +91,7 @@ public class Master extends Thread{
 
     }
 
-    synchronized Map<String,Double> getAverageOfUser(int user){
+     Map<String,Double> getAverageOfUser(int user){
         //return the average results of the user
         Map<String,Double> results = new HashMap<String,Double>();
         List<Map<String,Double>> userResults = totalResults.get(user); //get list of user's routes results
@@ -112,7 +120,7 @@ public class Master extends Thread{
     }
 
 
-    synchronized Map<String,Double> getAverage(){
+     Map<String,Double> getAverage(){
         //return the average results of all users combined
         Map<String,Double> results = new HashMap<String,Double>();
         int numberOfUsers = userIds.size();
@@ -136,6 +144,27 @@ public class Master extends Thread{
         return results;
 
     }
+
+     void addUser(String username){
+        if (!Users.containsKey(username)){
+            Users.put(username, numberOfUsers);
+            numberOfUsers++;
+            System.out.printf(String.format("Added new User %s with id: %d",username,Users.get(username)));
+        }
+
+
+    }
+
+     int getUser(String username){
+        if (Users.containsKey(username)){
+             return Users.get(username);
+
+        }
+        return -1;
+
+    }
+
+
 
     public void printResults(){
         System.out.println(totalResults);

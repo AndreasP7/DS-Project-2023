@@ -7,15 +7,16 @@ import android.os.Message;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Map;
 
 public class MyThread extends Thread{
 
     Handler myHandler;
 
-    GPX gpx;
+    Map<String,String> gpxData;
 
-    public MyThread(GPX gpx, Handler myHandler){
-        this.gpx = gpx;
+    public MyThread(Map<String,String> gpxData, Handler myHandler){
+        this.gpxData = gpxData;
         this.myHandler = myHandler;
     }
 
@@ -28,11 +29,12 @@ public class MyThread extends Thread{
             ObjectInputStream ois =
                     new ObjectInputStream(s.getInputStream());
 
-            oos.writeObject(gpx);
+            oos.writeObject(gpxData);
 
             oos.flush();
 
-            GPX result = (GPX)ois.readObject();
+            //GPX result = (GPX)ois.readObject();
+            String result = "1";
 
             Message msg = new Message();
             Bundle bundle = new Bundle();

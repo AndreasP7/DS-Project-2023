@@ -5,55 +5,43 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".SelectUser">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="This will be the server result"
-        android:id="@+id/label"
+        android:text="Welcome!"
+        android:id="@+id/welcome_label"
         android:textSize="30dp"
         android:layout_marginTop="30dp"
+        android:textAlignment="center"
         />
 
 
 
 
-
-
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="50dp"
+        android:id="@+id/input"
+        android:hint="Enter Username"
+        android:textSize="35dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginLeft="20dp"/>
 
     <Button
 
-        android:layout_margin="20dp"
+        android:layout_marginTop="100dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginLeft="20dp"
+
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:id="@+id/chooseFile"
+        android:id="@+id/logIn"
         android:textSize="30dp"
-        android:text="Choose File"
+        android:text="Log in"
         />
-
-    <Button
-
-        android:layout_margin="20dp"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:id="@+id/sendFile"
-        android:textSize="30dp"
-        android:text="Send File"
-        android:enabled="false"
-        />
-
-    <Button
-
-        android:layout_margin="20dp"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:id="@+id/viewResults"
-        android:textSize="30dp"
-        android:text="View Results"
-        android:enabled="false"
-        />
-
 
 
 </androidx.appcompat.widget.LinearLayoutCompat>

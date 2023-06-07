@@ -26,19 +26,27 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
     TextView label;
-    EditText input;
-    Button sendBtn;
+
+
 
     Button chooseBtn ;
+    Button sendBtn;
+    Button viewBtn;
 
     Handler myHandler;
 
-    private int uid;
+    Map<String,String> gpxData = new HashMap();
+
+
+
+    private String username;
 
     private static final int PERMISSION_REQUEST_CODE = 1;
     private ListView fileListView;
@@ -51,11 +59,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Intent intent = getIntent();
+        username = intent.getStringExtra("username");
+
+
+
         label = (TextView) findViewById(R.id.label);
-        input = (EditText) findViewById(R.id.input);
-        sendBtn = (Button)  findViewById(R.id.sendFile);
+
+
         chooseBtn = (Button) findViewById(R.id.chooseFile) ;
-        fileListView = (ListView) findViewById(R.id.fileListView);
+        sendBtn = (Button) findViewById(R.id.sendFile);
+        viewBtn = (Button) findViewById(R.id.viewResults);
+
+
+
+        label.setText("User " +username);
 
 
         myHandler = new Handler(Looper.getMainLooper(),
@@ -63,28 +81,31 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public boolean handleMessage(@NonNull Message message) {
 
-                        GPX result = (GPX) message.getData().getSerializable("results");
-                        label.setText((result.getResults().get("totalDistance")).toString());
+                        String result = (String) message.getData().getSerializable("results");
+                        label.setText(result);
                         return true;
                     }
                 });
 
-        sendBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String arg = input.getText().toString();
-                MyThread myThread = new MyThread(currentGpx,myHandler);
-                myThread.start();
-            }
-        });
+
 
         chooseBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openFilePicker(Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath()));
-                uid = Integer.parseInt(input.getText().toString());
+
             }
         });
+
+        sendBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MyThread myThread = new MyThread(gpxData,myHandler);
+                myThread.start();
+            }
+        });
+
+
 
     }
 
@@ -125,13 +146,14 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onActivityResult(ActivityResult result) {
                     Uri uri = result.getData().getData();
-                    GPX gpx = new GPX(uri.toString(), uid);
-                    gpx.setText(readFileContent(uri));
 
-                    chooseBtn.setText( "Thanks");
 
-                    MyThread myThread = new MyThread(gpx,myHandler);
-                    myThread.start();
+                    gpxData.put("text",readFileContent(uri) );
+                    gpxData.put("user", username);
+
+                    chooseBtn.setText( "File Chosen");
+                    sendBtn.setEnabled(true);
+
 
 
                 }

@@ -29,9 +29,9 @@ public class SocketHandler extends Thread{
     static final CustomLock lock = new CustomLock(); //used to lock workerSocket.accept(), so that 2 threads don't accept the same worker socket at the same time
 
     List<InetAddress> workerAddr;
-     HashMap<InetAddress, Socket> Workers;
-     HashMap<InetAddress, ObjectOutputStream> WorkersOut;
-     HashMap<InetAddress, ObjectInputStream> WorkersIn;
+    CustomMap<InetAddress, Socket> Workers;
+    CustomMap<InetAddress, ObjectOutputStream> WorkersOut;
+    CustomMap<InetAddress, ObjectInputStream> WorkersIn;
 
     Map<String,Double> userResults;
     int minWorkers;
@@ -48,7 +48,7 @@ public class SocketHandler extends Thread{
 
     List<Chunk> Chunks = new ArrayList<Chunk>();
 
-    public SocketHandler(ServerSocket workerSocket, Socket userProvider, int nChunks, HashMap<InetAddress, Socket> Workers ,HashMap<InetAddress, ObjectOutputStream> WorkersOut,HashMap<InetAddress, ObjectInputStream> WorkersIn, List<InetAddress> workerAddr, int minWorkers, Master master){
+    public SocketHandler(ServerSocket workerSocket, Socket userProvider, int nChunks, CustomMap<InetAddress, Socket> Workers ,CustomMap<InetAddress, ObjectOutputStream> WorkersOut,CustomMap<InetAddress, ObjectInputStream> WorkersIn, List<InetAddress> workerAddr, int minWorkers, Master master){
         this.workerSocket = workerSocket;
         this.userProvider = userProvider;
         this.nChunks = nChunks;
@@ -68,98 +68,134 @@ public class SocketHandler extends Thread{
             ObjectInputStream inUser = new ObjectInputStream(userProvider.getInputStream());
 
 
-            GPX userGPX = (GPX) inUser.readObject();
-            List<Map<String,String>> waypoints = parseGPX(userGPX);
-            System.out.printf(String.format("GPX received from User %d\n", userGPX.getUid()));
 
-            Map<String,Double> results = new HashMap<String,Double>();
+            Map<String,String> userRequest = (Map<String,String>) inUser.readObject();
 
-            List<Map<Integer, Chunk>> mapped = this.map(waypoints, userGPX.getUid()); //map chunks
+            if (userRequest.get("type").equals("gpx")){
+                master.addUser(userRequest.get("user"));
 
-            int chunk = 0; //counter for chunks
-            int counter = 0; //counter for workers. Used to simulate Round Robin
+                int userID = master.getUser(userRequest.get("user"));
+                GPX userGPX = new GPX("", userID);
 
-            Socket current; //current socket in Round Robin
-            synchronized (lock) {
+                userGPX.setText(userRequest.get("text"));
+
+                List<Map<String,String>> waypoints = parseGPX(userGPX);
+                System.out.printf(String.format("GPX received from User %d\n", userGPX.getUid()));
+
+                Map<String,Double> results = new HashMap<String,Double>();
+
+                List<Map<Integer, Chunk>> mapped = this.map(waypoints, userGPX.getUid()); //map chunks
+
+                int chunk = 0; //counter for chunks
+                int counter = 0; //counter for workers. Used to simulate Round Robin
+
+                Socket current; //current socket in Round Robin
+                synchronized (lock) {
 
 
-                while (mapped.size() > chunk) {
+                    while (mapped.size() > chunk) {
 
 
-                    while (workerAddr.size() < minWorkers) { //connect to minimum amount of workers
-                        System.out.println("Waiting for " + (minWorkers - workerAddr.size()) + " workers...");
+                        while (workerAddr.size() < minWorkers) { //connect to minimum amount of workers
+                            System.out.println("Waiting for " + (minWorkers - workerAddr.size()) + " workers...");
+                            lock.lock();
+                            workerProvider = workerSocket.accept();
+                            lock.unlock();
+
+                            if (!workerAddr.contains(workerProvider.getInetAddress())) {
+                                workerAddr.add(workerProvider.getInetAddress());
+                                Workers.put(workerProvider.getInetAddress(), workerProvider);
+                                WorkersIn.put(workerProvider.getInetAddress(), new ObjectInputStream(workerProvider.getInputStream()));
+                                WorkersOut.put(workerProvider.getInetAddress(), new ObjectOutputStream(workerProvider.getOutputStream()));
+
+
+                            }
+
+
+                        }
+                        current = Workers.get(workerAddr.get(counter)); //get current worker in Round Robin queue
+                        ObjectOutputStream outWorker = WorkersOut.get(workerAddr.get(counter));
+                        ObjectInputStream inWorker = WorkersIn.get(workerAddr.get(counter));
+
+
+                        outWorker.writeObject(mapped.get(chunk).get(userGPX.getUid())); //send chunk
+                        outWorker.flush();
+
+                        System.out.printf(String.format("Chunk %d sent to Worker %s\n", chunk, current.getInetAddress().getHostAddress()));
+
+
+                        Thread t = new WorkerHandler(inWorker, this);//new thread to receive results
+                        t.start();
+
+
                         lock.lock();
                         workerProvider = workerSocket.accept();
                         lock.unlock();
 
                         if (!workerAddr.contains(workerProvider.getInetAddress())) {
                             workerAddr.add(workerProvider.getInetAddress());
-                            Workers.put(workerProvider.getInetAddress(), workerProvider);
-                            WorkersIn.put(workerProvider.getInetAddress(), new ObjectInputStream(workerProvider.getInputStream()));
-                            WorkersOut.put(workerProvider.getInetAddress(), new ObjectOutputStream(workerProvider.getOutputStream()));
-
-
                         }
+                        Workers.put(workerProvider.getInetAddress(), workerProvider);
+                        WorkersIn.put(workerProvider.getInetAddress(), new ObjectInputStream(workerProvider.getInputStream()));
+                        WorkersOut.put(workerProvider.getInetAddress(), new ObjectOutputStream(workerProvider.getOutputStream()));
+
+
+                        if (counter == workerAddr.size() - 1) {
+                            counter = 0;
+
+                        } else {
+                            counter++;
+                        }
+                        chunk++;
 
 
                     }
-                    current = Workers.get(workerAddr.get(counter)); //get current worker in Round Robin queue
-                    ObjectOutputStream outWorker = WorkersOut.get(workerAddr.get(counter));
-                    ObjectInputStream inWorker = WorkersIn.get(workerAddr.get(counter));
+                }
 
-
-                    outWorker.writeObject(mapped.get(chunk).get(userGPX.getUid())); //send chunk
-                    outWorker.flush();
-
-                    System.out.printf(String.format("Chunk %d sent to Worker %s\n", chunk, current.getInetAddress().getHostAddress()));
-
-
-                    Thread t = new WorkerHandler(inWorker, this);//new thread to receive results
-                    t.start();
-
-
-                    lock.lock();
-                    workerProvider = workerSocket.accept();
-                    lock.unlock();
-
-                    if (!workerAddr.contains(workerProvider.getInetAddress())) {
-                        workerAddr.add(workerProvider.getInetAddress());
+                while(threadsReturned < mapped.size()){
+                    System.out.println("Waiting for results...threads returned: "+ this.threadsReturned);
+                    try{
+                        Thread.sleep(200);
+                    }catch (InterruptedException e){
+                        e.printStackTrace();
                     }
-                    Workers.put(workerProvider.getInetAddress(), workerProvider);
-                    WorkersIn.put(workerProvider.getInetAddress(), new ObjectInputStream(workerProvider.getInputStream()));
-                    WorkersOut.put(workerProvider.getInetAddress(), new ObjectOutputStream(workerProvider.getOutputStream()));
-
-
-                    if (counter == workerAddr.size() - 1) {
-                        counter = 0;
-
-                    } else {
-                        counter++;
-                    }
-                    chunk++;
 
 
                 }
+
+                userResults = Reduce(Iresults);
+
+                int userId = userGPX.getUid();
+                userGPX.setResults (userResults);
+                outUser.writeObject(userGPX);
+                outUser.flush();
+                this.master.addResult(userId,userResults);
             }
 
-            while(threadsReturned < mapped.size()){
-                System.out.println("Waiting for results...threads returned: "+ this.threadsReturned);
-                try{
-                    Thread.sleep(200);
-                }catch (InterruptedException e){
-                    e.printStackTrace();
+            if (userRequest.get("type").equals("user_average")){
+                String username = userRequest.get("user");
+                Map<String,Double> average = new HashMap<>();
+                average.put("averageTime", 0.0);
+                average.put("averageDistance", 0.0);
+                average.put("averageElevation", 0.0);
+
+
+                int userID = master.getUser(username);
+                if (userID != -1){
+                     average = master.getAverageOfUser(userID);
+
+
                 }
+                outUser.writeObject(average);
+            }
 
+            if (userRequest.get("type").equals("total_average")){
+                Map<String,Double> average = new HashMap<>();
+                average = master.getAverage();
+                outUser.writeObject(average);
 
             }
 
-            userResults = Reduce(Iresults);
-
-            int userId = userGPX.getUid();
-            userGPX.setResults (userResults);
-            outUser.writeObject(userGPX);
-            outUser.flush();
-            this.master.addResult(userId,userResults);
 
 
 

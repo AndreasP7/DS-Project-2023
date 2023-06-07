@@ -1,5 +1,8 @@
+
+
 import java.io.*;
 import java.util.Map;
+
 
 public class GPX implements Serializable {
     String path;
@@ -10,11 +13,15 @@ public class GPX implements Serializable {
 
     String text;
 
-    GPX(String path, int uid){
+    GPX(String path , int uid){
         this.path = path;
-        this.file = new File(path);
         this.uid = uid;
-        this.text = this.ReadFile();
+        if( !path.equals("")){
+            this.file = new File(path);
+            this.text = this.ReadFile();
+
+        }
+
 
 
     }
@@ -25,6 +32,8 @@ public class GPX implements Serializable {
         return this.results;
     }
     public String getText(){return this.text;}
+
+    public void setText(String text){this.text = text;}
 
     int getUid(){
         return this.uid;

@@ -46,8 +46,11 @@ public class User  {
                     out = new ObjectOutputStream(requestSocket.getOutputStream());
                     in = new ObjectInputStream(requestSocket.getInputStream());
 
-
-                    out.writeObject(gpx);//send gpx to server
+                    Map<String,String> gpxData = new HashMap<>();
+                    gpxData.put("text", gpx.getText());
+                    gpxData.put("user", "user");
+                    gpxData.put("type","gpx");
+                    out.writeObject(gpxData);//send gpx to server
                     out.flush();
 
                     gpx = (GPX) in.readObject();//get gpx with results from server

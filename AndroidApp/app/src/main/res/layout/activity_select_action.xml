@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".SelectAction">
+
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="This will be the server result"
+        android:text="Select Action"
         android:id="@+id/label"
         android:textSize="30dp"
         android:layout_marginTop="30dp"
+        android:textAlignment="center"
         />
-
-
-
-
 
 
 
@@ -27,9 +26,9 @@
         android:layout_margin="20dp"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:id="@+id/chooseFile"
+        android:id="@+id/sendGPXBtn"
         android:textSize="30dp"
-        android:text="Choose File"
+        android:text="Send GPX"
         />
 
     <Button
@@ -37,10 +36,10 @@
         android:layout_margin="20dp"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:id="@+id/sendFile"
+        android:id="@+id/viewUserAverageBtn"
         android:textSize="30dp"
-        android:text="Send File"
-        android:enabled="false"
+        android:text="Personal Average"
+        android:enabled="true"
         />
 
     <Button
@@ -48,12 +47,10 @@
         android:layout_margin="20dp"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:id="@+id/viewResults"
+        android:id="@+id/viewAverageBtn"
         android:textSize="30dp"
-        android:text="View Results"
-        android:enabled="false"
+        android:text="Community Average"
+        android:enabled="true"
         />
-
-
 
 </androidx.appcompat.widget.LinearLayoutCompat>
