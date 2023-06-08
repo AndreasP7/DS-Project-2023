@@ -81,6 +81,7 @@ public class WorkerThread extends Thread{
 
         double averageSpeed = totalDistance / totalTime;
 
+
         // Store the results in a map and return it
         Map<String, Double> result = new HashMap<String, Double>();
         result.put("totalDistance", totalDistance);

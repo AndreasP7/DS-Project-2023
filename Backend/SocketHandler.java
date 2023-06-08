@@ -296,7 +296,7 @@ public class SocketHandler extends Thread{
         int k =0;
         for( Map<String,String> w : waypoints){ //add each waypoint to a chunk, until the chunk is full
             chunk.addWp(w);
-            if(chunk.getSize() == n-1 ){
+            if(chunk.getSize() == n-1 && chunk.getSize() >1){
                 Chunks.add(chunk);
 
                 chunk = new Chunk(id);
@@ -306,7 +306,7 @@ public class SocketHandler extends Thread{
 
 
 
-            if(waypoints.size()-1 ==k && chunk.getSize() <= n-1){
+            if(waypoints.size()-1 ==k && chunk.getSize() <= n-1 && chunk.getSize()>1){
                 Chunks.add(chunk);
             }
             k+=1;
@@ -355,6 +355,7 @@ public class SocketHandler extends Thread{
             totalDistance += distance[i];
             totalElevation += elevation[i];
             averageSpeed += speed[i]/Iresults.size();
+
         }
 
         results.put("totalTime",totalTime);
