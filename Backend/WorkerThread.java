@@ -78,8 +78,8 @@ public class WorkerThread extends Thread{
                 totalElevation += elevation_diff;
             }
         }
-
-        double averageSpeed = totalDistance / totalTime;
+        totalTime = totalTime;
+        double averageSpeed = totalDistance / (totalTime/3600.0);
 
 
         // Store the results in a map and return it

@@ -188,7 +188,9 @@ public class SocketHandler extends Thread{
 
 
                 int userID = master.getUser(username);
+
                 if (userID != -1){
+
                      average = master.getAverageOfUser(userID);
 
 
@@ -196,6 +198,8 @@ public class SocketHandler extends Thread{
 
                 Response serverResponse = new Response(requestType,username,average);
                 outUser.writeObject(serverResponse);
+                outUser.flush();
+                System.out.println("Sent User Average to user: "+username);
             }
 
             if (requestType.equals("total_average")){
@@ -204,6 +208,7 @@ public class SocketHandler extends Thread{
 
                 Response serverResponse = new Response(userRequest.getType(), userRequest.getUsername(),average);
                 outUser.writeObject(serverResponse);
+                outUser.flush();
 
             }
 

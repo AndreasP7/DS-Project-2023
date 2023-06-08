@@ -1,6 +1,9 @@
 
 package com.example.activitytracker;
+
+
 import java.io.*;
+
 import java.util.Map;
 
 
@@ -14,6 +17,8 @@ public class GPX implements Serializable {
     String username;
 
     String text;
+
+    String fileName;
 
     public GPX(String path , int uid){
         this.path = path;
@@ -35,6 +40,12 @@ public class GPX implements Serializable {
         }
     }
 
+    public GPX(String path, String fileName , String username){
+        this.path = path;
+        this.uid = uid;
+        this.fileName = fileName;
+    }
+
     public void setResults(Map<String, Double> r){
         this.results = r;
     }
@@ -50,6 +61,51 @@ public class GPX implements Serializable {
     }
 
     public void setUid(int uid){ this.uid = uid;}
+
+    public void setFileName(String name){
+        this.fileName = name;
+    }
+
+    public String getFileName(){
+        return this.fileName;
+
+    }
+
+
+    @Override
+    public String toString() {
+        String gpxText = "";
+        Double time = results.get("totalTime");
+        Double speed = results.get("averageSpeed");
+        Double distance = results.get("totalDistance");
+        Double elevation = results.get("totalElevation");
+        String timeString = "";
+
+        int seconds = time.intValue();
+        int hours = seconds/3600;
+        int minutes = (seconds%3600)/60;
+        seconds = seconds%60;
+
+
+
+
+        gpxText = String.format("File Name: %s\n" +
+                "Total Time: %d h %d m %d s\n"+
+                "Average Speed: %.2f km/h\n"+
+                "Total Distance: %.2f km\n"+
+                "Total Elevation: %.2f m\n"
+
+                ,this.fileName,
+                hours,
+                minutes,
+                seconds,
+                speed,
+                distance,
+                elevation);
+
+
+        return gpxText;
+    }
 
     String ReadFile(){
         String text = "";

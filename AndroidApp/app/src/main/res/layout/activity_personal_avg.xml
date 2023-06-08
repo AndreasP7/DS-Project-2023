@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+
+
+
+
+
+
+
+
+    <Button
+
+        android:layout_margin="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:id="@+id/viewBtn"
+        android:textSize="30dp"
+        android:text="View Personal Average"
+        android:enabled="false"
+        />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="This will be the server result"
+        android:id="@+id/results"
+        android:textSize="30dp"
+        android:layout_marginTop="30dp"
+
+        />
+
+
+</androidx.appcompat.widget.LinearLayoutCompat>

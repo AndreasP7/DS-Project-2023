@@ -8,7 +8,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -16,6 +18,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.provider.DocumentsContract;
+import android.provider.MediaStore;
+import android.provider.OpenableColumns;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -47,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
     GPX gpx;
 
     Request request ;
+
+    Map <String,GPX> results = new HashMap<>();
 
 
 
@@ -87,15 +94,15 @@ public class MainActivity extends AppCompatActivity {
 
                         Response response = (Response) message.getData().getSerializable("response");
                         gpx = response.getGPX();
-                        String results = "";
-                        results += gpx.getResults().get("totalTime")+ "\n";
-                        results += gpx.getResults().get("averageSpeed")+ "\n";
-                        results += gpx.getResults().get("totalDistance")+ "\n";
-                        results += gpx.getResults().get("totalElevation")+ "\n";
 
 
 
-                        label.setText(results);
+                        results.put(gpx.getFileName(),gpx);
+
+
+
+
+                        viewBtn.setEnabled(true);
                         return true;
                     }
                 });
@@ -115,6 +122,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 MyThread myThread = new MyThread(request,myHandler);
                 myThread.start();
+            }
+        });
+
+        viewBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                label.setText(results.get(gpx.getFileName()).toString());
             }
         });
 
@@ -151,7 +165,30 @@ public class MainActivity extends AppCompatActivity {
         return content.toString();
     }
 
-
+    public String getFileNameFromUri(Uri uri) {
+        String fileName = null;
+        if (uri.getScheme().equals("content")) {
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            try {
+                int index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME) ;
+                if (cursor != null && cursor.moveToFirst() && index > 0 ) {
+                    fileName = cursor.getString(index);
+                }
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+        if (fileName == null) {
+            fileName = uri.getPath();
+            int slashIndex = fileName.lastIndexOf('/');
+            if (slashIndex != -1) {
+                fileName = fileName.substring(slashIndex + 1);
+            }
+        }
+        return fileName;
+    }
 
     ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -160,12 +197,15 @@ public class MainActivity extends AppCompatActivity {
                 public void onActivityResult(ActivityResult result) {
                     Uri uri = result.getData().getData();
 
-                    gpx = new GPX("",username);
+                    String fileName = getFileNameFromUri(uri);
+
+                    gpx = new GPX("",fileName, username);
                     gpx.setText(readFileContent(uri));
+
 
                     request = new Request("gpx",username,gpx);
 
-                    chooseBtn.setText( "File Chosen");
+                    label.setText(fileName);
                     sendBtn.setEnabled(true);
 
 

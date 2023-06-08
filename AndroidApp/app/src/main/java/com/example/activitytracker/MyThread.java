@@ -34,7 +34,7 @@ public class MyThread extends Thread{
             oos.flush();
 
             Response serverResponse = (Response) ois.readObject();
-
+            System.out.println("Ok");
 
             Message msg = new Message();
             Bundle bundle = new Bundle();

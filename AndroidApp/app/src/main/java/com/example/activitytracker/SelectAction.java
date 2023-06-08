@@ -43,6 +43,15 @@ public class SelectAction extends AppCompatActivity {
             }
         });
 
+        UserAvgBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(SelectAction.this,PersonalAvgActivity.class);
+                intent.putExtra("username",username);
+                startActivity(intent);
+            }
+        });
+
 
     }
 }
