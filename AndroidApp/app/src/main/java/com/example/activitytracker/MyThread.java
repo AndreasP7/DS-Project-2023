@@ -13,10 +13,10 @@ public class MyThread extends Thread{
 
     Handler myHandler;
 
-    Map<String,String> gpxData;
+    Request request;
 
-    public MyThread(Map<String,String> gpxData, Handler myHandler){
-        this.gpxData = gpxData;
+    public MyThread(Request request, Handler myHandler){
+        this.request = request;
         this.myHandler = myHandler;
     }
 
@@ -29,16 +29,16 @@ public class MyThread extends Thread{
             ObjectInputStream ois =
                     new ObjectInputStream(s.getInputStream());
 
-            oos.writeObject(gpxData);
+            oos.writeObject(request);
 
             oos.flush();
 
-            //GPX result = (GPX)ois.readObject();
-            String result = "1";
+            Response serverResponse = (Response) ois.readObject();
+
 
             Message msg = new Message();
             Bundle bundle = new Bundle();
-            bundle.putSerializable("results",result);
+            bundle.putSerializable("response",serverResponse);
             msg.setData(bundle);
             s.close();
 

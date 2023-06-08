@@ -1,5 +1,5 @@
 
-
+package com.example.activitytracker;
 import java.io.*;
 import java.util.Map;
 
@@ -11,9 +11,11 @@ public class GPX implements Serializable {
 
     int uid;
 
+    String username;
+
     String text;
 
-    GPX(String path , int uid){
+    public GPX(String path , int uid){
         this.path = path;
         this.uid = uid;
         if( !path.equals("")){
@@ -21,23 +23,33 @@ public class GPX implements Serializable {
             this.text = this.ReadFile();
 
         }
-
-
-
     }
-    void setResults(Map<String, Double> r){
+
+    public GPX(String path , String username){
+        this.path = path;
+        this.username = username;
+        if( !path.equals("")){
+            this.file = new File(path);
+            this.text = this.ReadFile();
+
+        }
+    }
+
+    public void setResults(Map<String, Double> r){
         this.results = r;
     }
-    Map<String, Double> getResults(){
+    public Map<String, Double> getResults(){
         return this.results;
     }
     public String getText(){return this.text;}
 
     public void setText(String text){this.text = text;}
 
-    int getUid(){
+    public int getUid(){
         return this.uid;
     }
+
+    public void setUid(int uid){ this.uid = uid;}
 
     String ReadFile(){
         String text = "";

@@ -1,3 +1,6 @@
+import com.example.activitytracker.GPX;
+import com.example.activitytracker.Request;
+import com.example.activitytracker.Response;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -48,6 +51,9 @@ public class SocketHandler extends Thread{
 
     List<Chunk> Chunks = new ArrayList<Chunk>();
 
+    String username;
+    String requestType;
+
     public SocketHandler(ServerSocket workerSocket, Socket userProvider, int nChunks, CustomMap<InetAddress, Socket> Workers ,CustomMap<InetAddress, ObjectOutputStream> WorkersOut,CustomMap<InetAddress, ObjectInputStream> WorkersIn, List<InetAddress> workerAddr, int minWorkers, Master master){
         this.workerSocket = workerSocket;
         this.userProvider = userProvider;
@@ -69,20 +75,19 @@ public class SocketHandler extends Thread{
 
 
 
-            Map<String,String> userRequest = (Map<String,String>) inUser.readObject();
+            Request userRequest = (Request) inUser.readObject();
+            requestType = userRequest.getType();
+            username = userRequest.getUsername();
 
-            if (userRequest.get("type").equals("gpx")){
-                master.addUser(userRequest.get("user"));
+            if (requestType.equals("gpx")){
+                master.addUser(userRequest.getUsername());
+                GPX userGPX = userRequest.getGPX();
+                userGPX.setUid(master.getUser(username));
 
-                int userID = master.getUser(userRequest.get("user"));
-                GPX userGPX = new GPX("", userID);
-
-                userGPX.setText(userRequest.get("text"));
 
                 List<Map<String,String>> waypoints = parseGPX(userGPX);
                 System.out.printf(String.format("GPX received from User %d\n", userGPX.getUid()));
 
-                Map<String,Double> results = new HashMap<String,Double>();
 
                 List<Map<Integer, Chunk>> mapped = this.map(waypoints, userGPX.getUid()); //map chunks
 
@@ -167,13 +172,15 @@ public class SocketHandler extends Thread{
 
                 int userId = userGPX.getUid();
                 userGPX.setResults (userResults);
-                outUser.writeObject(userGPX);
+
+                Response serverResponse = new Response(userRequest.getType(),userRequest.getUsername(),userGPX);
+                outUser.writeObject(serverResponse);
                 outUser.flush();
                 this.master.addResult(userId,userResults);
             }
 
-            if (userRequest.get("type").equals("user_average")){
-                String username = userRequest.get("user");
+            if (requestType.equals("user_average")){
+
                 Map<String,Double> average = new HashMap<>();
                 average.put("averageTime", 0.0);
                 average.put("averageDistance", 0.0);
@@ -186,13 +193,17 @@ public class SocketHandler extends Thread{
 
 
                 }
-                outUser.writeObject(average);
+
+                Response serverResponse = new Response(requestType,username,average);
+                outUser.writeObject(serverResponse);
             }
 
-            if (userRequest.get("type").equals("total_average")){
+            if (requestType.equals("total_average")){
                 Map<String,Double> average = new HashMap<>();
                 average = master.getAverage();
-                outUser.writeObject(average);
+
+                Response serverResponse = new Response(userRequest.getType(), userRequest.getUsername(),average);
+                outUser.writeObject(serverResponse);
 
             }
 

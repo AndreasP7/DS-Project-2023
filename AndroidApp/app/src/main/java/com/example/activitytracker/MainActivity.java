@@ -44,6 +44,10 @@ public class MainActivity extends AppCompatActivity {
 
     Map<String,String> gpxData = new HashMap();
 
+    GPX gpx;
+
+    Request request ;
+
 
 
     private String username;
@@ -81,8 +85,17 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public boolean handleMessage(@NonNull Message message) {
 
-                        String result = (String) message.getData().getSerializable("results");
-                        label.setText(result);
+                        Response response = (Response) message.getData().getSerializable("response");
+                        gpx = response.getGPX();
+                        String results = "";
+                        results += gpx.getResults().get("totalTime")+ "\n";
+                        results += gpx.getResults().get("averageSpeed")+ "\n";
+                        results += gpx.getResults().get("totalDistance")+ "\n";
+                        results += gpx.getResults().get("totalElevation")+ "\n";
+
+
+
+                        label.setText(results);
                         return true;
                     }
                 });
@@ -100,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         sendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyThread myThread = new MyThread(gpxData,myHandler);
+                MyThread myThread = new MyThread(request,myHandler);
                 myThread.start();
             }
         });
@@ -147,9 +160,10 @@ public class MainActivity extends AppCompatActivity {
                 public void onActivityResult(ActivityResult result) {
                     Uri uri = result.getData().getData();
 
+                    gpx = new GPX("",username);
+                    gpx.setText(readFileContent(uri));
 
-                    gpxData.put("text",readFileContent(uri) );
-                    gpxData.put("user", username);
+                    request = new Request("gpx",username,gpx);
 
                     chooseBtn.setText( "File Chosen");
                     sendBtn.setEnabled(true);
