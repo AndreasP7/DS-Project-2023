@@ -8,10 +8,12 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -35,6 +37,7 @@ import android.os.Message;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.renderscript.Sampler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -47,9 +50,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.github.mikephil.charting.charts.*;
+import com.github.mikephil.charting.data.*;
+import com.github.mikephil.charting.formatter.ValueFormatter;
+import com.github.mikephil.charting.utils.*;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -61,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
     Button viewBtn;
 
     LinearLayout chartContainer;
+    private BarChart barChart;
 
     Handler myHandler;
 
@@ -75,10 +84,21 @@ public class MainActivity extends AppCompatActivity {
 
     private String username;
 
+    // variable for our bar data.
+    BarData barData;
+
+    // variable for our bar data set.
+    BarDataSet barDataSet;
+
+    // array list for storing entries.
+    ArrayList barEntriesArrayList;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
         setContentView(R.layout.activity_main);
 
         Intent intent = getIntent();
@@ -87,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
 
         label = (TextView) findViewById(R.id.label);
 
-        chartContainer = findViewById(R.id.chartContainer);
+
 
         // Create the bar chart
         createBarChart();
@@ -95,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
         sendBtn = (Button) findViewById(R.id.sendFile);
         viewBtn = (Button) findViewById(R.id.viewResults);
         label.setText("User " + username);
+        barChart = findViewById(R.id.barChart);
 
 
         if (savedInstanceState != null) {
@@ -108,17 +129,18 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+
         myHandler = new Handler(Looper.getMainLooper(),
                 new Handler.Callback() {
                     @Override
                     public boolean handleMessage(@NonNull Message message) {
 
                         Response response = (Response) message.getData().getSerializable("response");
-                        gpx = response.getGPX();
-                        results.put(gpx.getFileName(), gpx);
+                        GPX responseGPX = response.getGPX();
+                        results.put(responseGPX.getFileName(), responseGPX);
 
                         viewBtn.setEnabled(true);
-
+                        createAlert("GPX Result", "Results received from server for file: "+responseGPX.getFileName());
 
                         return true;
                     }
@@ -139,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
 
                 MyThread myThread = new MyThread(request, myHandler);
                 myThread.start();
-                createNotification();
+
 
             }
         });
@@ -269,87 +291,61 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void createBarChart() {
-        int userResult = 10; // User result
-        int totalResults = 50; // Total results
+        barChart = findViewById(R.id.barChart);
+        getBarEntries();
+        barDataSet = new BarDataSet(barEntriesArrayList, "Geeks for Geeks");
 
-        // Calculate the ratio of user result to total results
-        float userRatio = (float) userResult / totalResults;
-        float totalRatio = 1.0f;
+        barData = new BarData(barDataSet);
 
-        int containerWidth = chartContainer.getWidth();
-
-        // Calculate the width of each bar based on the ratios
-        int userBarWidth = (int) (containerWidth * userRatio);
-        int totalBarWidth = (int) (containerWidth * totalRatio);
-
-        // Create a LinearLayout for the user result bar
-        LinearLayout.LayoutParams userParams = new LinearLayout.LayoutParams(
-                userBarWidth,
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                0
-        );
-        View userBar = new View(this);
-        userBar.setLayoutParams(userParams);
-        userBar.setBackgroundColor(Color.BLUE);
-
-        // Create a LinearLayout for the total results bar
-        LinearLayout.LayoutParams totalParams = new LinearLayout.LayoutParams(
-                totalBarWidth,
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                0
-        );
-        View totalBar = new View(this);
-        totalBar.setLayoutParams(totalParams);
-        totalBar.setBackgroundColor(Color.GREEN);
-
-        // Add the bars to the chart container
-        chartContainer.addView(userBar);
-        chartContainer.addView(totalBar);
-    }
-
-    private void createNotification() {
-        String id = "my_channel_id_01";
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        barDataSet.setDrawValues(false);
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = manager.getNotificationChannel(id);
-            if (channel == null) {
-                channel = new NotificationChannel(id, "Channel Title", NotificationManager.IMPORTANCE_HIGH);
-                channel.setDescription("[Channel description]");
-                channel.enableVibration(true);
-                channel.setVibrationPattern(new long[]{100, 1000, 200, 340});
-                channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-                manager.createNotificationChannel(channel);
-            }
-        }
+        barData.setBarWidth(0.5f);
 
-        Intent notificationIntent = new Intent(MainActivity.this, MainActivity.class);
-        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent pendingIntent = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            pendingIntent = PendingIntent.getActivity
-                    (this, 0, notificationIntent, PendingIntent.FLAG_MUTABLE);
-        } else {
-            pendingIntent = PendingIntent.getActivity
-                    (this, 0, notificationIntent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
-        }
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this, id)
-                .setSmallIcon(R.drawable.ic_launcher_background)
-                .setContentTitle("title")
-                .setContentText("Your text description")
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setVibrate(new long[]{100, 1000, 200, 340})
-                .setAutoCancel(false)
-                .setTicker("Notification");
+        barChart.setData(barData);
+        // adding color to our bar data set.
+        barDataSet.setColors(ColorTemplate.MATERIAL_COLORS);
 
-        NotificationManagerCompat m = NotificationManagerCompat.from(MainActivity.this);
+        // setting text color.
+        barDataSet.setValueTextColor(Color.BLACK);
 
-        builder.setContentIntent(pendingIntent);
-        if (ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-            m.notify(1, builder.build());
-        }
+        // setting text size
+        barDataSet.setValueTextSize(16f);
+        barChart.setDescription("");
+        barChart.animateX(1000);
+        barChart.getAxisRight().setDrawGridLines(false);
+        barChart.getAxisLeft().setDrawGridLines(false);
+        barChart.getXAxis().setDrawGridLines(false);
+        barChart.getXAxis().setDrawLabels(false);
+
+
+        barChart.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+
 
 
     }
+
+    private void getBarEntries() {
+        // creating a new array list
+        barEntriesArrayList = new ArrayList<>();
+
+        // adding new entry to our array list with bar
+        // entry and passing x and y axis value to it.
+        barEntriesArrayList.add(new BarEntry(1f, 4));
+
+
+        barEntriesArrayList.add(new BarEntry(2f, 2));
+
+    }
+
+    private void createAlert(String title, String message) {
+        new AlertDialog.Builder(MainActivity.this)
+                .setCancelable(true)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", null).create().show();
+
+
+    }
+
 }
