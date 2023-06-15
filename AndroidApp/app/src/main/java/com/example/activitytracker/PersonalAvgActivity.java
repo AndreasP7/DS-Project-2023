@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -19,6 +20,8 @@ public class PersonalAvgActivity extends AppCompatActivity {
     TextView text;
 
     Request request;
+
+    Response response;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,13 +42,21 @@ public class PersonalAvgActivity extends AppCompatActivity {
                     @Override
                     public boolean handleMessage(@NonNull Message message) {
 
-                        Response response = (Response) message.getData().getSerializable("response");
+                         response = (Response) message.getData().getSerializable("response");
                         text.setText("Received results");
-                        text.setText(response.getResults().toString());
+                        text.setVisibility(View.VISIBLE);
+
                         btn.setEnabled(true);
                         return true;
                     }
                 });
+
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                text.setText(response.getResults().toString());
+            }
+        });
         MyThread myThread = new MyThread(request,myHandler);
         myThread.start();
 

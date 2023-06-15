@@ -1,70 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:theme="@style/Base.Theme.ActivityTracker"
-    tools:context=".MainActivity"
-    >
-
-    <TextView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="This will be the server result"
-        android:id="@+id/label"
-        android:textSize="30dp"
-        android:layout_marginTop="30dp"
-        />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:theme="@style/Base.Theme.ActivityTracker"
+        tools:context=".MainActivity"
+        >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="This will be the server result"
+            android:id="@+id/label"
+            android:textSize="30dp"
+            android:layout_marginTop="30dp"
+            />
 
 
 
-    <com.github.mikephil.charting.charts.BarChart
-        android:id="@+id/barChart"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_margin="40dp"/>
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/barChart"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_margin="40dp"/>
 
 
 
 
-    <Button
+        <Button
 
-        android:layout_margin="20dp"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:id="@+id/chooseFile"
-        android:textSize="30dp"
-        android:text="Choose File"
-        style = "@style/ButtonStyle"
+            android:layout_margin="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:id="@+id/chooseFile"
+            android:textSize="30dp"
+            android:text="Choose File"
+            style = "@style/ButtonStyle"
 
-        />
+            />
 
-    <Button
+        <Button
 
-        android:layout_margin="20dp"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:id="@+id/sendFile"
-        android:textSize="30dp"
-        android:text="Send File"
-        android:enabled="false"
+            android:layout_margin="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:id="@+id/sendFile"
+            android:textSize="30dp"
+            android:text="Send File"
+            android:enabled="false"
 
-        />
+            />
 
-    <Button
+        <Button
 
-        android:layout_margin="20dp"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:id="@+id/viewResults"
-        android:textSize="30dp"
-        android:text="View Results"
-        android:enabled="false"
+            android:layout_margin="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:id="@+id/viewResults"
+            android:textSize="30dp"
+            android:text="View Results"
+            android:enabled="false"
 
-        />
+            />
 
 
 
 </androidx.appcompat.widget.LinearLayoutCompat>
+
+
