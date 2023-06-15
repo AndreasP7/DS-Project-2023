@@ -3,5 +3,14 @@
     <style name="Base.Theme.ActivityTracker" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="colorPrimary">#EC7557</item>
+        <item name="materialButtonStyle">@style/ButtonStyle</item>
+        <item name="android:textAppearanceButton">@style/ButtonStyle</item>
+
+
+
+
     </style>
+
+
 </resources>

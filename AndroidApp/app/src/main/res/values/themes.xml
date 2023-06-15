@@ -3,10 +3,14 @@
     <style name="Base.Theme.ActivityTracker" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">#EC7557</item>
+        <item name="buttonStyle">@style/ButtonStyle</item>
 
 
 
     </style>
+
+
 
     <style name="Theme.ActivityTracker" parent="Base.Theme.ActivityTracker" />
 </resources>

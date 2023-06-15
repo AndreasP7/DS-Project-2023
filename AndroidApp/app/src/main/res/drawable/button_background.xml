@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+android:color="@color/button_ripple"> <!-- Set the desired ripple color -->
+
+    <item>
+        <shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+            <corners android:radius="40dp" /> <!-- Adjust the radius as per your preference -->
+        </shape>
+    </item>
+
+</ripple>

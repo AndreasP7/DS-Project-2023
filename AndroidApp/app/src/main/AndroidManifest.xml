@@ -18,8 +18,9 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ActivityTracker"
+        android:theme="@style/Base.Theme.ActivityTracker"
         tools:targetApi="31">
+
         <activity
             android:name=".PersonalAvgActivity"
             android:exported="false" />
@@ -40,8 +41,6 @@
             android:exported="true" />
     </application>
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:forceDarkAllowed">false</item>
-    </style>
+
 
 </manifest>

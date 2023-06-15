@@ -5,7 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    android:theme="@style/Base.Theme.ActivityTracker"
+    tools:context=".MainActivity"
+    >
 
     <TextView
         android:layout_width="match_parent"
@@ -35,6 +37,8 @@
         android:id="@+id/chooseFile"
         android:textSize="30dp"
         android:text="Choose File"
+        style = "@style/ButtonStyle"
+
         />
 
     <Button
@@ -46,6 +50,7 @@
         android:textSize="30dp"
         android:text="Send File"
         android:enabled="false"
+
         />
 
     <Button
@@ -57,6 +62,7 @@
         android:textSize="30dp"
         android:text="View Results"
         android:enabled="false"
+
         />
 
 
