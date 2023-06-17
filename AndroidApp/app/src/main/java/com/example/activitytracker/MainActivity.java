@@ -5,6 +5,7 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -54,10 +55,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.github.mikephil.charting.charts.*;
-import com.github.mikephil.charting.data.*;
-import com.github.mikephil.charting.formatter.ValueFormatter;
-import com.github.mikephil.charting.utils.*;
+
+import com.github.mikephil.charting.animation.Easing;
+import com.github.mikephil.charting.charts.RadarChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.MarkerView;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.RadarData;
+import com.github.mikephil.charting.data.RadarDataSet;
+import com.github.mikephil.charting.data.RadarEntry;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.interfaces.datasets.IDataSet;
+import com.github.mikephil.charting.interfaces.datasets.IRadarDataSet;
+
+
+
 
 
 public class MainActivity extends AppCompatActivity {
@@ -68,8 +82,9 @@ public class MainActivity extends AppCompatActivity {
     Button sendBtn;
     Button viewBtn;
 
-    LinearLayout chartContainer;
-    private BarChart barChart;
+    private RadarChart chart;
+
+
 
     Handler myHandler;
 
@@ -80,24 +95,23 @@ public class MainActivity extends AppCompatActivity {
     Request request;
 
     CustomMap<String, GPX> results = new CustomMap<>();
+    CustomMap<String,Double> community = new CustomMap<>();
 
 
     private String username;
 
-    // variable for our bar data.
-    BarData barData;
 
-    // variable for our bar data set.
-    BarDataSet barDataSet;
 
-    // array list for storing entries.
-    ArrayList barEntriesArrayList;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        community.put("averageTime",0.0);
+        community.put("averageDistance",0.0);
+        community.put("averageElevation",0.0);
 
         setContentView(R.layout.activity_main);
 
@@ -110,12 +124,19 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Create the bar chart
-        createBarChart();
+        chart = findViewById(R.id.chart);
+
+        ChartBuilder builder = new ChartBuilder(chart);
+
+
+
+
+
         chooseBtn = (Button) findViewById(R.id.chooseFile);
         sendBtn = (Button) findViewById(R.id.sendFile);
         viewBtn = (Button) findViewById(R.id.viewResults);
         label.setText("User " + username);
-        barChart = findViewById(R.id.barChart);
+
 
 
         if (savedInstanceState != null) {
@@ -136,11 +157,23 @@ public class MainActivity extends AppCompatActivity {
                     public boolean handleMessage(@NonNull Message message) {
 
                         Response response = (Response) message.getData().getSerializable("response");
-                        GPX responseGPX = response.getGPX();
-                        results.put(responseGPX.getFileName(), responseGPX);
+                        if(response.getType().equals("gpx")){
+                            GPX responseGPX = response.getGPX();
+                            results.put(responseGPX.getFileName(), responseGPX);
 
-                        viewBtn.setEnabled(true);
-                        createAlert("GPX Result", "Results received from server for file: "+responseGPX.getFileName());
+                            if (community.get("averageTime") == 0.0){
+                                community.put("averageTime",responseGPX.getResults().get("totalTime"));
+                                community.put("averageElevation",responseGPX.getResults().get("totalElevation"));
+                                community.put("averageDistance",responseGPX.getResults().get("totalDistance"));
+                            }
+                            viewBtn.setEnabled(true);
+                            createAlert("GPX Result", "Results received from server for file: "+responseGPX.getFileName());
+
+                        }
+                        if(response.getType().equals("total_average")){
+                            community = new CustomMap(response.getResults());
+                        }
+
 
                         return true;
                     }
@@ -170,6 +203,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 label.setText(results.get(gpx.getFileName()).toString());
+                CustomMap<String,Double> map = new CustomMap(results.get(gpx.getFileName()).getResults());
+
+
+                builder.buildRadar( "route",map,community);
+                chart.setVisibility(View.VISIBLE);
+
             }
         });
 
@@ -290,53 +329,7 @@ public class MainActivity extends AppCompatActivity {
             });
 
 
-    private void createBarChart() {
-        barChart = findViewById(R.id.barChart);
-        getBarEntries();
-        barDataSet = new BarDataSet(barEntriesArrayList, "Geeks for Geeks");
 
-        barData = new BarData(barDataSet);
-
-        barDataSet.setDrawValues(false);
-
-
-        barData.setBarWidth(0.5f);
-
-        barChart.setData(barData);
-        // adding color to our bar data set.
-        barDataSet.setColors(ColorTemplate.MATERIAL_COLORS);
-
-        // setting text color.
-        barDataSet.setValueTextColor(Color.BLACK);
-
-        // setting text size
-        barDataSet.setValueTextSize(16f);
-        barChart.setDescription("");
-        barChart.animateX(1000);
-        barChart.getAxisRight().setDrawGridLines(false);
-        barChart.getAxisLeft().setDrawGridLines(false);
-        barChart.getXAxis().setDrawGridLines(false);
-        barChart.getXAxis().setDrawLabels(false);
-
-
-        barChart.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-
-
-
-    }
-
-    private void getBarEntries() {
-        // creating a new array list
-        barEntriesArrayList = new ArrayList<>();
-
-        // adding new entry to our array list with bar
-        // entry and passing x and y axis value to it.
-        barEntriesArrayList.add(new BarEntry(1f, 4));
-
-
-        barEntriesArrayList.add(new BarEntry(2f, 2));
-
-    }
 
     private void createAlert(String title, String message) {
         new AlertDialog.Builder(MainActivity.this)
@@ -347,5 +340,110 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+    private void setData(String type, CustomMap<String,Double> user, CustomMap<String,Double> community) {
+
+        ArrayList<RadarEntry> entries1 = new ArrayList<>();
+        ArrayList<RadarEntry> entries2 = new ArrayList<>();
+
+        // NOTE: The order of the entries when being added to the entries array determines their position around the center of
+        // the chart.
+        if(type.equals("route")){
+            entries1.add(new RadarEntry(user.get("totalTime").floatValue()));
+            entries1.add(new RadarEntry(user.get("totalDistance").floatValue()));
+            entries1.add(new RadarEntry(user.get("totalElevation").floatValue()));
+        }else{
+            entries1.add(new RadarEntry(user.get("averageTime").floatValue()));
+            entries1.add(new RadarEntry(user.get("averageDistance").floatValue()));
+            entries1.add(new RadarEntry(user.get("averageElevation").floatValue()));
+        }
+
+
+        entries2.add(new RadarEntry(community.get("averageTime").floatValue()));
+        entries2.add(new RadarEntry(community.get("averageDistance").floatValue()));
+        entries2.add(new RadarEntry(community.get("averageElevation").floatValue()));
+
+        RadarDataSet set1 = new RadarDataSet(entries1, "You");
+        set1.setColor(Color.rgb(103, 110, 129));
+        set1.setFillColor(Color.rgb(103, 110, 129));
+        set1.setDrawFilled(true);
+        set1.setFillAlpha(180);
+        set1.setLineWidth(2f);
+        set1.setDrawHighlightCircleEnabled(true);
+        set1.setDrawHighlightIndicators(false);
+
+        RadarDataSet set2 = new RadarDataSet(entries2, "Community Average");
+        set2.setColor(Color.rgb(121, 162, 175));
+        set2.setFillColor(Color.rgb(121, 162, 175));
+        set2.setDrawFilled(true);
+        set2.setFillAlpha(180);
+        set2.setLineWidth(2f);
+        set2.setDrawHighlightCircleEnabled(true);
+        set2.setDrawHighlightIndicators(false);
+
+        ArrayList<IRadarDataSet> sets = new ArrayList<>();
+        sets.add(set1);
+        sets.add(set2);
+
+        RadarData data = new RadarData(sets);
+
+        data.setValueTextSize(8f);
+        data.setDrawValues(false);
+        data.setValueTextColor(Color.BLACK);
+
+        chart.setData(data);
+        chart.invalidate();
+    }
+    private void setDefaultData(){
+        float mul = 80;
+        float min = 20;
+        int cnt = 5;
+
+        ArrayList<RadarEntry> entries1 = new ArrayList<>();
+        ArrayList<RadarEntry> entries2 = new ArrayList<>();
+
+        // NOTE: The order of the entries when being added to the entries array determines their position around the center of
+        // the chart.
+        for (int i = 0; i < cnt; i++) {
+            float val1 = (float) (Math.random() * mul) + min;
+            entries1.add(new RadarEntry(val1));
+
+            float val2 = (float) (Math.random() * mul) + min;
+            entries2.add(new RadarEntry(val2));
+        }
+
+        RadarDataSet set1 = new RadarDataSet(entries1, "Last Week");
+        set1.setColor(Color.rgb(103, 110, 129));
+        set1.setFillColor(Color.rgb(103, 110, 129));
+        set1.setDrawFilled(true);
+        set1.setFillAlpha(180);
+        set1.setLineWidth(2f);
+        set1.setDrawHighlightCircleEnabled(true);
+        set1.setDrawHighlightIndicators(false);
+
+        RadarDataSet set2 = new RadarDataSet(entries2, "This Week");
+        set2.setColor(Color.rgb(121, 162, 175));
+        set2.setFillColor(Color.rgb(121, 162, 175));
+        set2.setDrawFilled(true);
+        set2.setFillAlpha(180);
+        set2.setLineWidth(2f);
+        set2.setDrawHighlightCircleEnabled(true);
+        set2.setDrawHighlightIndicators(false);
+
+        ArrayList<IRadarDataSet> sets = new ArrayList<>();
+        sets.add(set1);
+        sets.add(set2);
+
+        RadarData data = new RadarData(sets);
+
+        data.setValueTextSize(8f);
+        data.setDrawValues(false);
+        data.setValueTextColor(Color.WHITE);
+
+        chart.setData(data);
+        chart.invalidate();
+    }
+
+
 
 }

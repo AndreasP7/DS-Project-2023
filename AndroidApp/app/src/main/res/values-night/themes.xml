@@ -6,6 +6,8 @@
         <item name="colorPrimary">#EC7557</item>
         <item name="materialButtonStyle">@style/ButtonStyle</item>
         <item name="android:textAppearanceButton">@style/ButtonStyle</item>
+        <item name="android:textColor">@color/dark_text</item>
+
 
 
 

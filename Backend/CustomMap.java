@@ -9,6 +9,10 @@ public class CustomMap<K, V> {
         map = new HashMap<>();
     }
 
+    public CustomMap(Map<K,V> map){
+        this.map = map;
+    }
+
     public synchronized void put(K key, V value) {
         map.put(key, value);
     }

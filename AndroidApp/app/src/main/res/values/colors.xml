@@ -4,5 +4,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="dark_text">#E1D9D9</color>
     <color name="button_ripple">#9A9797</color>
+    <color name="transparent">#00FFFFFF</color>
+    <color name="field_background">#7E7E7E</color>
 
 </resources>
