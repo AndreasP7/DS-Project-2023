@@ -13,7 +13,9 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -46,8 +48,11 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -69,9 +74,7 @@ import com.github.mikephil.charting.data.RadarEntry;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.IDataSet;
 import com.github.mikephil.charting.interfaces.datasets.IRadarDataSet;
-
-
-
+import com.google.gson.Gson;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -85,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
     private RadarChart chart;
 
 
-
     Handler myHandler;
 
     Map<String, String> gpxData = new HashMap();
@@ -95,23 +97,25 @@ public class MainActivity extends AppCompatActivity {
     Request request;
 
     CustomMap<String, GPX> results = new CustomMap<>();
-    CustomMap<String,Double> community = new CustomMap<>();
+    CustomMap<String, Double> community = new CustomMap<>();
 
+    public static final String SHARED_PREFS = "sharedPrefs";
 
     private String username;
 
 
+    public static String CHANNEL_1_ID = "channel1";
+    private NotificationManagerCompat notificationManager;
 
-
-
+    Gson gson = new Gson();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        community.put("averageTime",0.0);
-        community.put("averageDistance",0.0);
-        community.put("averageElevation",0.0);
+        community.put("averageTime", 0.0);
+        community.put("averageDistance", 0.0);
+        community.put("averageElevation", 0.0);
 
         setContentView(R.layout.activity_main);
 
@@ -121,15 +125,13 @@ public class MainActivity extends AppCompatActivity {
 
         label = (TextView) findViewById(R.id.label);
 
-
+        createNotificationChannels();
+        notificationManager = NotificationManagerCompat.from(this);
 
         // Create the bar chart
         chart = findViewById(R.id.chart);
 
         ChartBuilder builder = new ChartBuilder(chart);
-
-
-
 
 
         chooseBtn = (Button) findViewById(R.id.chooseFile);
@@ -149,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
             request = (Request) savedInstanceState.get("request");
         }
 
-
+        loadData();
 
         myHandler = new Handler(Looper.getMainLooper(),
                 new Handler.Callback() {
@@ -157,23 +159,25 @@ public class MainActivity extends AppCompatActivity {
                     public boolean handleMessage(@NonNull Message message) {
 
                         Response response = (Response) message.getData().getSerializable("response");
-                        if(response.getType().equals("gpx")){
+                        if (response.getType().equals("gpx")) {
                             GPX responseGPX = response.getGPX();
                             results.put(responseGPX.getFileName(), responseGPX);
 
-                            if (community.get("averageTime") == 0.0){
-                                community.put("averageTime",responseGPX.getResults().get("totalTime"));
-                                community.put("averageElevation",responseGPX.getResults().get("totalElevation"));
-                                community.put("averageDistance",responseGPX.getResults().get("totalDistance"));
+                            if (community.get("averageTime") == 0.0) {
+                                community.put("averageTime", responseGPX.getResults().get("totalTime"));
+                                community.put("averageElevation", responseGPX.getResults().get("totalElevation"));
+                                community.put("averageDistance", responseGPX.getResults().get("totalDistance"));
                             }
                             viewBtn.setEnabled(true);
-                            createAlert("GPX Result", "Results received from server for file: "+responseGPX.getFileName());
-
+                            createAlert("GPX Result", "Results received from server for file: " + responseGPX.getFileName());
+                            sendChannel1Notification(MainActivity.this, responseGPX.getFileName());
+                            writeFile(responseGPX.toString(),responseGPX.getFileName()+"_results.txt");
                         }
-                        if(response.getType().equals("total_average")){
+                        if (response.getType().equals("total_average")) {
                             community = new CustomMap(response.getResults());
                         }
 
+                        //saveData();
 
                         return true;
                     }
@@ -184,17 +188,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 openFilePicker(Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath()));
-
+                saveData();
             }
         });
 
         sendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                request = new Request("gpx", username, gpx);
                 MyThread myThread = new MyThread(request, myHandler);
                 myThread.start();
-
+                saveData();
 
             }
         });
@@ -203,12 +207,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 label.setText(results.get(gpx.getFileName()).toString());
-                CustomMap<String,Double> map = new CustomMap(results.get(gpx.getFileName()).getResults());
+                CustomMap<String, Double> map = new CustomMap(results.get(gpx.getFileName()).getResults());
 
 
-                builder.buildRadar( "route",map,community);
+                builder.buildRadar("route", map, community);
                 chart.setVisibility(View.VISIBLE);
-
+                saveData();
             }
         });
 
@@ -227,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
         outState.putBoolean("viewBtnState", viewBtn.isEnabled());
         outState.putSerializable("request", request);
 
+        saveData();
 
     }
 
@@ -319,7 +324,7 @@ public class MainActivity extends AppCompatActivity {
                     gpx.setText(readFileContent(uri));
 
 
-                    request = new Request("gpx", username, gpx);
+
 
                     label.setText(fileName);
                     sendBtn.setEnabled(true);
@@ -327,8 +332,6 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             });
-
-
 
 
     private void createAlert(String title, String message) {
@@ -341,109 +344,136 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void setData(String type, CustomMap<String,Double> user, CustomMap<String,Double> community) {
+    private void createNotificationChannels() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel1 = new NotificationChannel(
+                    CHANNEL_1_ID,
+                    "Channel 1",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            channel1.setDescription("This is Channel 1");
 
-        ArrayList<RadarEntry> entries1 = new ArrayList<>();
-        ArrayList<RadarEntry> entries2 = new ArrayList<>();
 
-        // NOTE: The order of the entries when being added to the entries array determines their position around the center of
-        // the chart.
-        if(type.equals("route")){
-            entries1.add(new RadarEntry(user.get("totalTime").floatValue()));
-            entries1.add(new RadarEntry(user.get("totalDistance").floatValue()));
-            entries1.add(new RadarEntry(user.get("totalElevation").floatValue()));
-        }else{
-            entries1.add(new RadarEntry(user.get("averageTime").floatValue()));
-            entries1.add(new RadarEntry(user.get("averageDistance").floatValue()));
-            entries1.add(new RadarEntry(user.get("averageElevation").floatValue()));
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel1);
+
         }
 
 
-        entries2.add(new RadarEntry(community.get("averageTime").floatValue()));
-        entries2.add(new RadarEntry(community.get("averageDistance").floatValue()));
-        entries2.add(new RadarEntry(community.get("averageElevation").floatValue()));
-
-        RadarDataSet set1 = new RadarDataSet(entries1, "You");
-        set1.setColor(Color.rgb(103, 110, 129));
-        set1.setFillColor(Color.rgb(103, 110, 129));
-        set1.setDrawFilled(true);
-        set1.setFillAlpha(180);
-        set1.setLineWidth(2f);
-        set1.setDrawHighlightCircleEnabled(true);
-        set1.setDrawHighlightIndicators(false);
-
-        RadarDataSet set2 = new RadarDataSet(entries2, "Community Average");
-        set2.setColor(Color.rgb(121, 162, 175));
-        set2.setFillColor(Color.rgb(121, 162, 175));
-        set2.setDrawFilled(true);
-        set2.setFillAlpha(180);
-        set2.setLineWidth(2f);
-        set2.setDrawHighlightCircleEnabled(true);
-        set2.setDrawHighlightIndicators(false);
-
-        ArrayList<IRadarDataSet> sets = new ArrayList<>();
-        sets.add(set1);
-        sets.add(set2);
-
-        RadarData data = new RadarData(sets);
-
-        data.setValueTextSize(8f);
-        data.setDrawValues(false);
-        data.setValueTextColor(Color.BLACK);
-
-        chart.setData(data);
-        chart.invalidate();
     }
-    private void setDefaultData(){
-        float mul = 80;
-        float min = 20;
-        int cnt = 5;
 
-        ArrayList<RadarEntry> entries1 = new ArrayList<>();
-        ArrayList<RadarEntry> entries2 = new ArrayList<>();
+    public void sendChannel1Notification(Context context, String filename) {
+        Intent activityIntent = new Intent(context, MainActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(context,
+                0, activityIntent, PendingIntent.FLAG_IMMUTABLE);
 
-        // NOTE: The order of the entries when being added to the entries array determines their position around the center of
-        // the chart.
-        for (int i = 0; i < cnt; i++) {
-            float val1 = (float) (Math.random() * mul) + min;
-            entries1.add(new RadarEntry(val1));
 
-            float val2 = (float) (Math.random() * mul) + min;
-            entries2.add(new RadarEntry(val2));
+        Notification notification = new NotificationCompat.Builder(context, CHANNEL_1_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setColor(Color.BLUE)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .setContentIntent(contentIntent)
+                .setAutoCancel(true)
+                .setOnlyAlertOnce(true)
+                .setContentText("Results received for file: "+filename)
+                .setContentTitle("Results")
+                .build();
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        if (ActivityCompat.checkSelfPermission( MainActivity.this,android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            String [] permissions = {android.Manifest.permission.POST_NOTIFICATIONS};
+            ActivityCompat.requestPermissions(this,permissions,1);
+
+        }
+        notificationManager.notify(1, notification);
+    }
+    public void saveData() {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        editor.putString("username", username);
+        editor.putBoolean("viewBtnState", viewBtn.isEnabled());
+        editor.putBoolean("sendBtnState", sendBtn.isEnabled());
+        editor.putString("results",gson.toJson(results));
+        editor.putString("gpx",gson.toJson(gpx));
+        editor.putString("community",gson.toJson(community));
+
+
+
+
+        editor.apply();
+
+        //Toast.makeText(this, "Results saved", Toast.LENGTH_SHORT).show();
+    }
+
+    public void loadData() {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
+
+        if (sharedPreferences.contains("username")){
+            username = sharedPreferences.getString("username", null);
+        }
+        if(sharedPreferences.contains("viewBtnState")){
+            viewBtn.setEnabled(sharedPreferences.getBoolean("viewBtnState", false));
+        }
+        if(sharedPreferences.contains("sendBtnState")){
+            sendBtn.setEnabled(sharedPreferences.getBoolean("sendBtnState", false));
+        }
+        if(sharedPreferences.contains("community")){
+            community = gson.fromJson(sharedPreferences.getString("community", null),CustomMap.class);
+        }
+        if(sharedPreferences.contains("results")){
+            results = gson.fromJson(sharedPreferences.getString("results",null),CustomMap.class);
+        }
+        if(sharedPreferences.contains("gpx")){
+            gpx = gson.fromJson(sharedPreferences.getString("gpx",null), GPX.class);
         }
 
-        RadarDataSet set1 = new RadarDataSet(entries1, "Last Week");
-        set1.setColor(Color.rgb(103, 110, 129));
-        set1.setFillColor(Color.rgb(103, 110, 129));
-        set1.setDrawFilled(true);
-        set1.setFillAlpha(180);
-        set1.setLineWidth(2f);
-        set1.setDrawHighlightCircleEnabled(true);
-        set1.setDrawHighlightIndicators(false);
-
-        RadarDataSet set2 = new RadarDataSet(entries2, "This Week");
-        set2.setColor(Color.rgb(121, 162, 175));
-        set2.setFillColor(Color.rgb(121, 162, 175));
-        set2.setDrawFilled(true);
-        set2.setFillAlpha(180);
-        set2.setLineWidth(2f);
-        set2.setDrawHighlightCircleEnabled(true);
-        set2.setDrawHighlightIndicators(false);
-
-        ArrayList<IRadarDataSet> sets = new ArrayList<>();
-        sets.add(set1);
-        sets.add(set2);
-
-        RadarData data = new RadarData(sets);
-
-        data.setValueTextSize(8f);
-        data.setDrawValues(false);
-        data.setValueTextColor(Color.WHITE);
-
-        chart.setData(data);
-        chart.invalidate();
     }
 
+    public boolean isExternalStorageWritable(){
+        if( Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())){
+            Log.i("State","External Storage is writable");
+            return true;
+        }
+        return false;
+
+    }
+
+    public void writeFile(String text, String filename){
+
+        if (!checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+            String [] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+            ActivityCompat.requestPermissions(this,permissions,1);
+        }
+
+        if (isExternalStorageWritable()){
+            File file = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),filename);
+            try{
+                FileOutputStream fos = new FileOutputStream(file);
+                fos.write(text.getBytes());
+                fos.close();
+                Toast.makeText(this,"File saved", Toast.LENGTH_SHORT).show();
+            }
+            catch(IOException e){
+                e.printStackTrace();
+
+            }
+
+
+        }
+        else{
+            Toast.makeText(this,"Error saving file", Toast.LENGTH_SHORT).show();
+        }
+
+
+    }
+
+    public boolean checkPermission(String permission){
+        int check = ContextCompat.checkSelfPermission(this,permission);
+        return (check == PackageManager.PERMISSION_GRANTED);
+
+    }
 
 
 }
