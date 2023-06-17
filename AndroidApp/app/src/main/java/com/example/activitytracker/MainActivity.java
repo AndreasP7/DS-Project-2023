@@ -254,6 +254,16 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
+        sharedPreferences.edit().clear();
+
+    }
+
+
+
 
     private void openFilePicker(Uri pickerInitialUri) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
