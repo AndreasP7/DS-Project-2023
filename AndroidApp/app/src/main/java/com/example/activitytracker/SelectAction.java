@@ -17,8 +17,8 @@ public class SelectAction extends AppCompatActivity {
     private TextView label;
 
     private Button gpxBtn;
-    private Button UserAvgBtn;
-    private Button AvgBtn;
+    private Button personalStatsBtn;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,8 +30,8 @@ public class SelectAction extends AppCompatActivity {
 
         label = (TextView) findViewById(R.id.label) ;
         gpxBtn = (Button) findViewById(R.id.sendGPXBtn);
-        UserAvgBtn = (Button) findViewById(R.id.viewUserAverageBtn);
-        AvgBtn = (Button) findViewById(R.id.viewAverageBtn);
+        personalStatsBtn = (Button) findViewById(R.id.viewPersonalStats);
+
 
         gpxBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -43,7 +43,7 @@ public class SelectAction extends AppCompatActivity {
             }
         });
 
-        UserAvgBtn.setOnClickListener(new View.OnClickListener() {
+        personalStatsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(SelectAction.this,PersonalAvgActivity.class);

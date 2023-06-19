@@ -36,21 +36,12 @@
         android:layout_margin="20dp"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:id="@+id/viewUserAverageBtn"
+        android:id="@+id/viewPersonalStats"
         android:textSize="30dp"
-        android:text="Personal Average"
+        android:text="Personal Stats"
         android:enabled="true"
         />
 
-    <Button
 
-        android:layout_margin="20dp"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:id="@+id/viewAverageBtn"
-        android:textSize="30dp"
-        android:text="Community Average"
-        android:enabled="true"
-        />
 
 </androidx.appcompat.widget.LinearLayoutCompat>
