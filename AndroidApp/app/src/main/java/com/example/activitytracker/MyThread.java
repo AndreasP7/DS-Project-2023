@@ -15,15 +15,18 @@ public class MyThread extends Thread{
 
     Request request;
 
-    public MyThread(Request request, Handler myHandler){
+    String server;
+
+    public MyThread(Request request, Handler myHandler, String server){
         this.request = request;
         this.myHandler = myHandler;
+        this.server = server;
     }
 
     @Override
     public void run() {
         try {
-            Socket s = new Socket("192.168.1.22",4020);
+            Socket s = new Socket(server,4020);
             ObjectOutputStream oos =
                     new ObjectOutputStream(s.getOutputStream());
             ObjectInputStream ois =

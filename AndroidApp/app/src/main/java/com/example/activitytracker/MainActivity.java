@@ -85,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
     Button sendBtn;
     Button viewBtn;
 
+    private String server;
     private RadarChart chart;
 
 
@@ -121,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         username = intent.getStringExtra("username");
+        server = intent.getStringExtra("server");
 
 
         label = (TextView) findViewById(R.id.label);
@@ -163,6 +165,10 @@ public class MainActivity extends AppCompatActivity {
                             GPX responseGPX = response.getGPX();
                             results.put(responseGPX.getFileName(), responseGPX);
 
+
+
+
+
                             if (community.get("averageTime") == 0.0) {
                                 community.put("averageTime", responseGPX.getResults().get("totalTime"));
                                 community.put("averageElevation", responseGPX.getResults().get("totalElevation"));
@@ -177,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
                             community = new CustomMap(response.getResults());
                         }
 
-                        //saveData();
+
 
                         return true;
                     }
@@ -196,9 +202,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 request = new Request("gpx", username, gpx);
-                MyThread myThread = new MyThread(request, myHandler);
+                MyThread myThread = new MyThread(request, myHandler, server);
                 myThread.start();
-                saveData();
+
+                request = new Request("total_average", username);
+                MyThread myThread2 = new MyThread(request, myHandler, server);
+                myThread2.start();
+
 
             }
         });
@@ -209,10 +219,12 @@ public class MainActivity extends AppCompatActivity {
                 label.setText(results.get(gpx.getFileName()).toString());
                 CustomMap<String, Double> map = new CustomMap(results.get(gpx.getFileName()).getResults());
 
+                if (community.get("averageTime") != 0.0 && community.get("averageDistance") != 0.0&& community.get("averageElevation") != 0.0){
+                    builder.buildRadar("route", map, community);
+                    chart.setVisibility(View.VISIBLE);
+                }
 
-                builder.buildRadar("route", map, community);
-                chart.setVisibility(View.VISIBLE);
-                saveData();
+
             }
         });
 
@@ -258,7 +270,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
-        sharedPreferences.edit().clear();
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear();
+        editor.apply();
+
 
     }
 

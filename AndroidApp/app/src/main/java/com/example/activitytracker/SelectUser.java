@@ -13,6 +13,7 @@ public class SelectUser extends AppCompatActivity {
 
     TextView label;
     EditText input;
+    EditText server;
     Button logInBtn;
 
     @Override
@@ -23,6 +24,7 @@ public class SelectUser extends AppCompatActivity {
         label = (TextView) findViewById(R.id.welcome_label);
         input = (EditText) findViewById(R.id.input);
         logInBtn = (Button) findViewById (R.id.logIn);
+        server = (EditText) findViewById(R.id.server);
 
         logInBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -30,6 +32,7 @@ public class SelectUser extends AppCompatActivity {
 
                 Intent intent = new Intent(SelectUser.this, SelectAction.class);
                 intent.putExtra("username",input.getText().toString());
+                intent.putExtra("server", server.getText().toString());
                 startActivity(intent);
 
             }

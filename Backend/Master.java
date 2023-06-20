@@ -115,6 +115,10 @@ public class Master extends Thread{
         results.put("averageDistance", totalDistance/n);
         results.put("averageElevation", totalElevation/n);
 
+        results.put("totalTime", totalTime);
+        results.put("totalDistance",totalDistance);
+        results.put("totalElevation", totalElevation);
+
         return results;
 
     }

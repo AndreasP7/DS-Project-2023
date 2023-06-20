@@ -13,6 +13,7 @@ import android.widget.TextView;
 public class SelectAction extends AppCompatActivity {
 
     private String username;
+    private String server;
 
     private TextView label;
 
@@ -27,6 +28,8 @@ public class SelectAction extends AppCompatActivity {
 
         Intent intent = getIntent();
         username = intent.getStringExtra("username");
+        server = intent.getStringExtra("server");
+
 
         label = (TextView) findViewById(R.id.label) ;
         gpxBtn = (Button) findViewById(R.id.sendGPXBtn);
@@ -38,6 +41,7 @@ public class SelectAction extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(SelectAction.this, MainActivity.class);
                 intent.putExtra("username",username);
+                intent.putExtra("server", server);
                 startActivity(intent);
 
             }
@@ -48,6 +52,7 @@ public class SelectAction extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(SelectAction.this,PersonalAvgActivity.class);
                 intent.putExtra("username",username);
+                intent.putExtra("server", server);
                 startActivity(intent);
             }
         });

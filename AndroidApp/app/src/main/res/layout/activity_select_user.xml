@@ -39,6 +39,15 @@
         android:textSize="35dp"
         android:layout_marginRight="20dp"
         android:layout_marginLeft="20dp"/>
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="50dp"
+        android:id="@+id/server"
+        android:hint="Enter Server IP"
+        android:textSize="35dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginLeft="20dp"/>
 
     <Button
 
