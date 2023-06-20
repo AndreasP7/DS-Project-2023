@@ -133,9 +133,8 @@ public class ChartBuilder {
 
         XAxis xAxis = barChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-
+        xAxis.setDrawAxisLine(true);
         xAxis.setDrawGridLines(false);
-        xAxis.setDrawAxisLine(false);
         xAxis.setTextColor(Color.LTGRAY);
         xAxis.setTextSize(13f);
         xAxis.setLabelCount(3);
@@ -154,9 +153,15 @@ public class ChartBuilder {
         left.setDrawGridLines(false);
         left.setDrawZeroLine(true); // draw a zero line
         left.setZeroLineColor(Color.WHITE);
-        left.setZeroLineWidth(0.7f);
+        left.setZeroLineWidth(1f);
         barChart.getAxisRight().setEnabled(false);
         barChart.getLegend().setEnabled(false);
+        left.setAxisMinimum(-100f);
+        left.setAxisMaximum(100f);
+
+
+
+
 
 
         Description description = barChart.getDescription();
@@ -214,7 +219,9 @@ public class ChartBuilder {
     private class MyValueFormatter extends ValueFormatter {
         @Override
         public String getFormattedValue(float value) {
-            return String.valueOf( value);
+            DecimalFormat decimalFormat = new DecimalFormat("0.00");
+            String formattedString = decimalFormat.format(value);
+            return formattedString+"%";
         }
     }
 
@@ -382,6 +389,7 @@ public class ChartBuilder {
                 colors.add(purple);
         }
 
+
         BarDataSet set;
 
         if (barChart.getData() != null &&
@@ -396,16 +404,16 @@ public class ChartBuilder {
             set.setValueTextColors(colors);
 
             BarData data = new BarData(set);
-
-            data.setValueFormatter(new MyValueFormatter());
             data.setValueTextSize(13f);
 
-
+            data.setValueFormatter(new MyValueFormatter());
             data.setBarWidth(0.8f);
 
             barChart.setData(data);
+            barChart.getAxisLeft().setDrawZeroLine(true); // Enable zero line
             barChart.invalidate();
         }
+
     }
 
 
