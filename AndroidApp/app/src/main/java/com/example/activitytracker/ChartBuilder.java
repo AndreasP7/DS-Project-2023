@@ -143,7 +143,7 @@ public class ChartBuilder {
         xAxis.setGranularity(1f);
         xAxis.setValueFormatter(new MyAxisValueFormatter());
 
-        barChart.setVisibleYRangeMaximum(100, YAxis.AxisDependency.LEFT);
+
 
 
         YAxis left = barChart.getAxisLeft();
@@ -157,6 +157,7 @@ public class ChartBuilder {
         left.setZeroLineWidth(0.7f);
         barChart.getAxisRight().setEnabled(false);
         barChart.getLegend().setEnabled(false);
+
 
         Description description = barChart.getDescription();
         description.setEnabled(true);
