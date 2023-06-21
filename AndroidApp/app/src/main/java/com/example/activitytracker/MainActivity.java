@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.mikephil.charting.animation.Easing;
+import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.RadarChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
@@ -86,7 +87,9 @@ public class MainActivity extends AppCompatActivity {
     Button viewBtn;
 
     private String server;
-    private RadarChart chart;
+    private BarChart chart;
+
+    String stateTag = "STATE_ID";
 
 
     Handler myHandler;
@@ -94,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
     Map<String, String> gpxData = new HashMap();
 
     GPX gpx;
+    GPX chosenGpx;
 
     Request request;
 
@@ -113,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i(stateTag, "On Create");
 
         community.put("averageTime", 0.0);
         community.put("averageDistance", 0.0);
@@ -131,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
         notificationManager = NotificationManagerCompat.from(this);
 
         // Create the bar chart
-        chart = findViewById(R.id.chart);
+        chart = (BarChart) findViewById(R.id.chart);
 
         ChartBuilder builder = new ChartBuilder(chart);
 
@@ -141,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
         viewBtn = (Button) findViewById(R.id.viewResults);
         label.setText("User " + username);
 
-
+        loadData();
 
         if (savedInstanceState != null) {
             username = (String) savedInstanceState.get("username");
@@ -151,9 +156,19 @@ public class MainActivity extends AppCompatActivity {
             viewBtn.setEnabled(savedInstanceState.getBoolean("viewBtnState"));
             results = (CustomMap<String, GPX>) savedInstanceState.get("results");
             request = (Request) savedInstanceState.get("request");
+            chosenGpx = (GPX) savedInstanceState.get("chosenGpx");
+
         }
 
-        loadData();
+        if (chosenGpx ==null){
+            sendBtn.setEnabled(false);
+            clearData();
+
+        }
+        if (gpx==null){
+            viewBtn.setEnabled(false);
+            clearData();
+        }
 
         myHandler = new Handler(Looper.getMainLooper(),
                 new Handler.Callback() {
@@ -175,9 +190,10 @@ public class MainActivity extends AppCompatActivity {
                                 community.put("averageDistance", responseGPX.getResults().get("totalDistance"));
                             }
                             viewBtn.setEnabled(true);
+                            saveData();
                             createAlert("GPX Result", "Results received from server for file: " + responseGPX.getFileName());
                             sendChannel1Notification(MainActivity.this, responseGPX.getFileName());
-                            writeFile(responseGPX.toString(),responseGPX.getFileName()+"_results.txt");
+
                         }
                         if (response.getType().equals("total_average")) {
                             community = new CustomMap(response.getResults());
@@ -194,13 +210,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 openFilePicker(Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath()));
-                saveData();
+
             }
         });
 
         sendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                gpx = chosenGpx;
                 request = new Request("gpx", username, gpx);
                 MyThread myThread = new MyThread(request, myHandler, server);
                 myThread.start();
@@ -208,6 +225,9 @@ public class MainActivity extends AppCompatActivity {
                 request = new Request("total_average", username);
                 MyThread myThread2 = new MyThread(request, myHandler, server);
                 myThread2.start();
+
+                chosenGpx = null;
+                sendBtn.setEnabled(false);
 
 
             }
@@ -220,13 +240,15 @@ public class MainActivity extends AppCompatActivity {
                 CustomMap<String, Double> map = new CustomMap(results.get(gpx.getFileName()).getResults());
 
                 if (community.get("averageTime") != 0.0 && community.get("averageDistance") != 0.0&& community.get("averageElevation") != 0.0){
-                    builder.buildRadar("route", map, community);
+                    builder.buildBar("route", map, community);
                     chart.setVisibility(View.VISIBLE);
                 }
 
 
             }
         });
+
+
 
 
     }
@@ -237,19 +259,28 @@ public class MainActivity extends AppCompatActivity {
         outState.putSerializable("results", results);
         outState.putString("username", username);
         outState.putSerializable("gpx", gpx);
+        outState.putSerializable("chosenGpx", chosenGpx);
         outState.putString("label", label.getText().toString());
         sendBtn = (Button) findViewById(R.id.sendFile);
         outState.putBoolean("sendBtnState", sendBtn.isEnabled());
         outState.putBoolean("viewBtnState", viewBtn.isEnabled());
         outState.putSerializable("request", request);
-
+        Log.i(stateTag, "On Save");
         saveData();
 
     }
 
     @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Log.i(stateTag, "On PressBack");
+        saveData();
+    }
+
+    @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
+        Log.i(stateTag, "On Restore");
 
         if (savedInstanceState != null) {
             username = (String) savedInstanceState.get("username");
@@ -269,14 +300,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.clear();
-        editor.apply();
+
+        saveData();
+        Log.d(stateTag, "On destroy");
 
 
     }
-
 
 
 
@@ -345,8 +374,8 @@ public class MainActivity extends AppCompatActivity {
 
                     String fileName = getFileNameFromUri(uri);
 
-                    gpx = new GPX("", fileName, username);
-                    gpx.setText(readFileContent(uri));
+                    chosenGpx = new GPX("", fileName, username);
+                    chosenGpx.setText(readFileContent(uri));
 
 
 
@@ -422,6 +451,7 @@ public class MainActivity extends AppCompatActivity {
         editor.putBoolean("sendBtnState", sendBtn.isEnabled());
         editor.putString("results",gson.toJson(results));
         editor.putString("gpx",gson.toJson(gpx));
+        editor.putString("chosenGpx",gson.toJson(chosenGpx));
         editor.putString("community",gson.toJson(community));
 
 
@@ -429,7 +459,7 @@ public class MainActivity extends AppCompatActivity {
 
         editor.apply();
 
-        //Toast.makeText(this, "Results saved", Toast.LENGTH_SHORT).show();
+        Log.i(stateTag, "Saved Data");
     }
 
     public void loadData() {
@@ -453,7 +483,17 @@ public class MainActivity extends AppCompatActivity {
         if(sharedPreferences.contains("gpx")){
             gpx = gson.fromJson(sharedPreferences.getString("gpx",null), GPX.class);
         }
+        if(sharedPreferences.contains("chosenGpx")){
+            chosenGpx = gson.fromJson(sharedPreferences.getString("chosenGpx",null), GPX.class);
+        }
+        Log.i(stateTag, "Loaded Data");
+    }
 
+    public void clearData(){
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear();
+        editor.apply();
     }
 
     public boolean isExternalStorageWritable(){
