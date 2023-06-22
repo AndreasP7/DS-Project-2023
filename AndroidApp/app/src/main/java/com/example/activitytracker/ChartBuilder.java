@@ -36,6 +36,7 @@ public class ChartBuilder {
 
     BarChart barChart;
     RadarChart radarChart;
+    //type used to access user results
     String type;
     CustomMap<String,Double> user;
     CustomMap<String,Double> community;
