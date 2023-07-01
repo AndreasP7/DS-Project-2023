@@ -44,6 +44,7 @@ public class GPX implements Serializable {
         this.path = path;
         this.uid = uid;
         this.fileName = fileName;
+        this.username = username;
     }
 
     public void setResults(Map<String, Double> r){
@@ -90,12 +91,14 @@ public class GPX implements Serializable {
 
 
         gpxText = String.format("File Name: %s\n" +
+                "User: %s\n"+
                 "Total Time: %d h %d m %d s\n"+
                 "Average Speed: %.2f km/h\n"+
                 "Total Distance: %.2f km\n"+
                 "Total Elevation: %.2f m\n"
 
                 ,this.fileName,
+                this.username,
                 hours,
                 minutes,
                 seconds,

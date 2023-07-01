@@ -16,6 +16,7 @@ public class SelectAction extends AppCompatActivity {
     private String server;
 
     private TextView label;
+    private TextView user;
 
     private Button gpxBtn;
     private Button personalStatsBtn;
@@ -34,6 +35,9 @@ public class SelectAction extends AppCompatActivity {
         label = (TextView) findViewById(R.id.label) ;
         gpxBtn = (Button) findViewById(R.id.sendGPXBtn);
         personalStatsBtn = (Button) findViewById(R.id.viewPersonalStats);
+        user = (TextView) findViewById(R.id.username) ;
+        user.setText(username);
+
 
 
         gpxBtn.setOnClickListener(new View.OnClickListener() {

@@ -48,6 +48,8 @@ public class PersonalAvgActivity extends AppCompatActivity {
 
 
 
+
+
         chart = (BarChart) findViewById(R.id.chart);
 
         ChartBuilder builder = new ChartBuilder(chart);
@@ -140,6 +142,8 @@ public class PersonalAvgActivity extends AppCompatActivity {
         MyThread myThread2 = new MyThread(request,myHandler, server);
         myThread2.start();
 
+
+        text.setText("Waiting");
 
 
 

@@ -148,7 +148,8 @@ public class MainActivity extends AppCompatActivity {
 
         loadData();
 
-        if (savedInstanceState != null) {
+        if (savedInstanceState != null && username.equals((String) savedInstanceState.get("username"))) {
+
             username = (String) savedInstanceState.get("username");
             gpx = (GPX) savedInstanceState.get("gpx");
             label.setText(savedInstanceState.getString("label"));
@@ -465,28 +466,32 @@ public class MainActivity extends AppCompatActivity {
     public void loadData() {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
 
-        if (sharedPreferences.contains("username")){
-            username = sharedPreferences.getString("username", null);
-        }
-        if(sharedPreferences.contains("viewBtnState")){
-            viewBtn.setEnabled(sharedPreferences.getBoolean("viewBtnState", false));
-        }
-        if(sharedPreferences.contains("sendBtnState")){
-            sendBtn.setEnabled(sharedPreferences.getBoolean("sendBtnState", false));
-        }
-        if(sharedPreferences.contains("community")){
-            community = gson.fromJson(sharedPreferences.getString("community", null),CustomMap.class);
-        }
-        if(sharedPreferences.contains("results")){
-            results = gson.fromJson(sharedPreferences.getString("results",null),CustomMap.class);
-        }
-        if(sharedPreferences.contains("gpx")){
-            gpx = gson.fromJson(sharedPreferences.getString("gpx",null), GPX.class);
-        }
-        if(sharedPreferences.contains("chosenGpx")){
-            chosenGpx = gson.fromJson(sharedPreferences.getString("chosenGpx",null), GPX.class);
-        }
-        Log.i(stateTag, "Loaded Data");
+
+            if (username.equals(null)){
+                username = sharedPreferences.getString("username", null);
+            }
+            if(sharedPreferences.contains("viewBtnState")){
+                viewBtn.setEnabled(sharedPreferences.getBoolean("viewBtnState", false));
+            }
+            if(sharedPreferences.contains("sendBtnState")){
+                sendBtn.setEnabled(sharedPreferences.getBoolean("sendBtnState", false));
+            }
+            if(sharedPreferences.contains("community")){
+                community = gson.fromJson(sharedPreferences.getString("community", null),CustomMap.class);
+            }
+            if(sharedPreferences.contains("results")){
+                results = gson.fromJson(sharedPreferences.getString("results",null),CustomMap.class);
+            }
+            if(sharedPreferences.contains("gpx")){
+                gpx = gson.fromJson(sharedPreferences.getString("gpx",null), GPX.class);
+            }
+            if(sharedPreferences.contains("chosenGpx")){
+                chosenGpx = gson.fromJson(sharedPreferences.getString("chosenGpx",null), GPX.class);
+            }
+            Log.i(stateTag, "Loaded Data");
+
+
+
     }
 
     public void clearData(){
